@@ -39,26 +39,28 @@
          (v:info :editor "Deactivating editor mode."))))
 
 (define-handler (editor tick) (ev)
-  (cond ((retained 'movement :left) (setf (vx (vel editor)) -10))
-        ((retained 'movement :right) (setf (vx (vel editor)) +10))
-        (T (setf (vx (vel editor)) 0)))
-  (cond ((retained 'movement :up) (setf (vy (vel editor)) -10))
-        ((retained 'movement :down) (setf (vy (vel editor)) +10))
-        (T (setf (vy (vel editor)) 0)))
-  (nv+ (location editor) (vel editor)))
+  (when (active editor)
+    (cond ((retained 'movement :left) (setf (vx (vel editor)) -10))
+          ((retained 'movement :right) (setf (vx (vel editor)) +10))
+          (T (setf (vx (vel editor)) 0)))
+    (cond ((retained 'movement :up) (setf (vy (vel editor)) -10))
+          ((retained 'movement :down) (setf (vy (vel editor)) +10))
+          (T (setf (vy (vel editor)) 0)))
+    (nv+ (location editor) (vel editor))))
 
 (define-handler (editor mouse-move) (ev pos)
-  (let ((pos (snap (screen->vec pos (width *context*) (height *context*)) 32))
-        (selected (selected editor)))
-    (setf (mouse-pos editor) pos)
-    (when selected
-      (case (mode editor)
-        (:place
-         (setf (location selected) pos))
-        (:resize
-         (setf (location selected) (v/ (v+ pos (start-pos editor)) 2))
-         (setf (size selected) (vmax 32 (nvabs (vxy (v- pos (start-pos editor))))))
-         (load (offload selected)))))))
+  (when (active editor)
+    (let ((pos (snap (screen->vec pos (width *context*) (height *context*)) 32))
+          (selected (selected editor)))
+      (setf (mouse-pos editor) pos)
+      (when selected
+        (case (mode editor)
+          (:place
+           (setf (location selected) pos))
+          (:resize
+           (setf (location selected) (v/ (v+ pos (start-pos editor)) 2))
+           (setf (size selected) (vmax 32 (nvabs (vxy (v- pos (start-pos editor))))))
+           (load (offload selected))))))))
 
 (define-handler (editor mouse-press) (ev button)
   (when (active editor)
@@ -95,25 +97,27 @@
                     (return))))))))))))
 
 (define-handler (editor mouse-release) (ev button)
-  (case button
-    (:left
-     (case (mode editor)
-       (:place
-        (when (selected editor)
-          (let ((pos (mouse-pos editor)))
-            (setf (location (selected editor)) pos)
-            (setf (start-pos editor) pos)
-            (cond ((eql (find-class 'ground) (to-place editor))
-                   (setf (mode editor) :resize))
-                  (T
-                   (setf (selected editor) NIL))))))))))
+  (when (active editor)
+    (case button
+      (:left
+       (case (mode editor)
+         (:place
+          (when (selected editor)
+            (let ((pos (mouse-pos editor)))
+              (setf (location (selected editor)) pos)
+              (setf (start-pos editor) pos)
+              (cond ((eql (find-class 'ground) (to-place editor))
+                     (setf (mode editor) :resize))
+                    (T
+                     (setf (selected editor) NIL)))))))))))
 
 (define-handler (editor mouse-scroll) (ev delta)
-  (let* ((classes (find-leaf-classes (find-class 'sized-entity)))
-         (pos (or (position (to-place editor) classes) 0)))
-    (setf pos (mod (+ pos (if (< 0 delta) 1 -1)) (length classes)))
-    (setf (to-place editor) (nth pos classes))
-    (v:info :editor "Selecting ~a" (to-place editor))))
+  (when (active editor)
+    (let* ((classes (find-leaf-classes (find-class 'sized-entity)))
+           (pos (or (position (to-place editor) classes) 0)))
+      (setf pos (mod (+ pos (if (< 0 delta) 1 -1)) (length classes)))
+      (setf (to-place editor) (nth pos classes))
+      (v:info :editor "Selecting ~a" (to-place editor)))))
 
 (defun find-leaf-classes (base-class)
   (if (c2mop:class-direct-subclasses base-class)
