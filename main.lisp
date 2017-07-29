@@ -17,6 +17,13 @@
 (defmethod finalize :after ((main main))
   (harmony-simple:stop))
 
+(define-subject sidescroll-camera* (sidescroll-camera)
+  ()
+  (:default-initargs :name :camera))
+
+(defmethod setup-perspective :after ((camera sidescroll-camera*) ev)
+  (setf (location camera) (vec (/ (width ev) 2) (/ (height ev) 2) -10)))
+
 (progn
   (defmethod setup-scene ((main main))
     (let ((scene (scene main)))
@@ -25,9 +32,7 @@
             do (loop for x from 0 to 5000 by 384
                      do (enter (make-instance 'crate :location (vec x y 0))
                                scene)))
-      (enter (make-instance 'sidescroll-camera :name :camera
-                                               :location (vec (/ (width *context*) 2) (/ (height *context*) 2) -10)
-                                               :target (unit :player scene))
+      (enter (make-instance 'sidescroll-camera* :target (unit :player scene))
              scene)))
   (maybe-reload-scene))
 
