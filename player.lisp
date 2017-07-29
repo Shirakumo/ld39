@@ -72,7 +72,7 @@
    :max-jump-count 2
    :vacc (vec 0.2 -15 0)
    :vdcc (vec 0.4 0.5 0)
-   :vlim (vec 15 20 0)))
+   :vlim (vec 15 30 0)))
 
 (define-handler (player jump) (ev key)
   (when (and (< (jump-count player) (max-jump-count player))
@@ -101,8 +101,13 @@
           (T
            (incf (vx vel) (vx (vdcc player)))))
 
-    (when (/= 0 (vx vel))
-      (setf (second (first (animations player))) (* 0.48 (/ (vx (vlim player)) (abs (vx vel)))))))
+    (setf (second (first (animations player)))
+          (if (/= 0 (vx vel))
+              (* (if (< 0.1 (abs (vy vel)))
+                     (/ (vy (vlim player)) (abs (vy vel)) 2)
+                     0.48)
+                 (/ (vx (vlim player)) (abs (vx vel))))
+              1000.0)))
   
   (incf (vy (vel player)) (vy (vdcc player)))
   (let ((nearest-hit NIL))
