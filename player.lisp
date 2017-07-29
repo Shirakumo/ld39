@@ -128,7 +128,6 @@
 (defmethod hit ((player player) (entity sized-entity) hit)
   (when (< (vy (hit-normal hit)) 0.0)
     (setf (jump-count player) 0
-          (vy (vel player)) 0.0
           (vy (vel player)) 0.0))
   (when (> (vy (hit-normal hit)) 0.0)
     (setf (vy (vel player)) 0.0))
