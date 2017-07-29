@@ -1,7 +1,7 @@
 uniform float density = 1.0;
-uniform float weight = 0.01;
+uniform float weight = 0.05;
 uniform float decay = 1.0;
-uniform float exposure = 1.2;
+uniform float exposure = 1.0;
 uniform int samples = 100;
 uniform vec2 origin = vec2(0.5, 0.5);
 uniform sampler2D black_render_pass;
@@ -9,6 +9,7 @@ uniform sampler2D previous_pass;
 
 in vec2 tex_coord;
 out vec4 color;
+
 
 void main(){
   vec4 black_color = vec4(0.0, 0.0, 0.0, 0.0);
@@ -28,6 +29,6 @@ void main(){
   
   black_color *= exposure;
   color = texture(previous_pass, tex_coord);
-  color.xyz *= black_color.xyz*2;
+  color.xyz *= black_color.xyz;
   color.a += black_color.a;
 }
