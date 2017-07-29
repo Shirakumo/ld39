@@ -8,7 +8,7 @@
 
 (defclass main (trial:main)
   ()
-  (:default-initargs :clear-color (vec 0.25 0.25 0.25 1)))
+  (:default-initargs :clear-color (vec 0.2 0.2 0.2 1)))
 
 (defmethod initialize-instance :after ((main main) &key)
   (harmony-simple:start)
@@ -22,21 +22,28 @@
   (:default-initargs :name :camera))
 
 (defmethod setup-perspective :after ((camera sidescroll-camera*) ev)
+  (setf (zoom camera) (/ (width ev) 2048))
   (vsetf (location camera)
-         (/ (width ev) 2)
-         (/ (height ev) 3/2)))
+         (/ (width ev) (zoom camera) 2)
+         (/ (height ev) (zoom camera) 3/2)))
 
 (progn
   (defmethod setup-scene ((main main))
     (let ((scene (scene main)))
-      (enter (make-instance 'editor) scene)
-      (enter (make-instance 'player) scene)
+      (loop repeat 10 for x from 0 by 512
+            do (enter (make-instance (alexandria:random-elt '(pipe-0 pipe-1 pipe-2 pipe-3)) :location (vec x -128 0)) scene))
       (enter (make-instance 'ground :size (vec 10000 512) :location (vec 0 (+ 64 256) 0)) scene)
       (loop repeat 10 for x from 0 by 256
             do (enter (make-instance 'ground :size (vec 64 128) :location (vec x -128 0)) scene))
+      (enter (make-instance 'player) scene)
       (enter (make-instance 'sidescroll-camera* :target (unit :player scene))
              scene)))
   (maybe-reload-scene))
+
+(define-shader-pass black-render-pass* (black-render-pass)
+  ())
+
+(defmethod paint :around ((entity background-entity) (pass black-render-pass*)))
 
 (define-shader-pass light-scatter-pass* (light-scatter-pass)
   ()
@@ -49,7 +56,7 @@
   (defmethod setup-pipeline ((main main))
     (let ((pipeline (pipeline main))
           (pass1 (make-instance 'render-pass))
-          (pass2 (make-instance 'black-render-pass))
+          (pass2 (make-instance 'black-render-pass*))
           (pass3 (make-instance 'light-scatter-pass* :uniforms `(("origin" ,(vec 0.7 1))))))
       (register pass1 pipeline)
       (connect (port pass1 'color) (port pass3 'previous-pass) pipeline)

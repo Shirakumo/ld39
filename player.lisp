@@ -6,17 +6,6 @@
 
 (in-package #:org.shirakumo.fraf.ld39)
 
-(define-asset (ld39 tire) texture
-    (#p"tire-1.png"))
-
-(define-asset (ld39 crate) texture
-    (#p"crate-0.png"))
-
-(define-shader-subject crate (base-entity solid-entity)
-  ()
-  (:default-initargs
-   :texture (asset 'ld39 'crate)))
-
 (define-action movement ())
 
 (define-action jump (movement)

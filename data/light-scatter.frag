@@ -29,6 +29,7 @@ void main(){
   
   black_color *= exposure;
   color = texture(previous_pass, tex_coord);
+  color.xyz += 0.5*(1-length(delta_coord)*100);
   color.xyz *= black_color.xyz;
   color.a += black_color.a;
 }

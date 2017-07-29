@@ -8,6 +8,7 @@
 (asdf:defsystem ld39
   :components ((:file "package")
                (:file "base")
+               (:file "objects")
                (:file "collision")
                (:file "player")
                (:file "editor")

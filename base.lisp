@@ -8,11 +8,17 @@
 
 (define-pool ld39 :base :ld39)
 
+(define-asset (ld39 32x) mesh
+    ((make-rectangle 32 32)))
+
+(define-asset (ld39 64x) mesh
+    ((make-rectangle 64 64)))
+
 (define-asset (ld39 128x) mesh
     ((make-rectangle 128 128)))
 
-(define-asset (ld39 32x) mesh
-    ((make-rectangle 32 32)))
+(define-asset (ld39 256x) mesh
+    ((make-rectangle 256 256)))
 
 (defgeneric solidp (entity)
   (:method (entity) nil))
@@ -23,6 +29,9 @@
     (:default-initargs :size (vec 128 128)))
 
   (defclass solid-entity (sized-entity)
+    ())
+
+  (defclass background-entity (entity)
     ()))
 
 (defmethod solidp ((entity solid-entity))
@@ -36,6 +45,13 @@
    :velocity (vec 0 0 0)
    :vertex-array (asset 'ld39 '128x)
    :axis +vz+))
+
+(define-shader-subject decoration (vertex-subject
+                                   textured-subject
+                                   sized-entity)
+  ()
+  (:default-initargs
+   :vertex-array (asset 'ld39 '128x)))
 
 (define-shader-subject ground (vertex-subject
                                colored-subject
