@@ -23,8 +23,6 @@
 (define-shader-subject player (base-entity solid-entity)
   ((move-vel :initform (vec 0 0 0)
              :accessor move-vel)
-   (jumpingp :initform nil
-             :accessor jumpingp)
    (jump-count :initarg :jump-count
                :initform 0
                :accessor jump-count)
@@ -52,18 +50,16 @@
   (case key
     (:a (setf (vx (move-vel player)) (- 3.5)))
     (:d (setf (vx (move-vel player)) (+ 3.5)))
-    (:space (setf (jumpingp player) t))))
+    (:space (jump player))))
 
 (define-handler (player key-release) (ev key)
   (case key
     (:a (setf (vx (move-vel player)) (max 0 (vx (move-vel player)))))
-    (:d (setf (vx (move-vel player)) (min 0 (vx (move-vel player)))))
-    (:space (setf (jumpingp player) nil))))
+    (:d (setf (vx (move-vel player)) (min 0 (vx (move-vel player)))))))
 
 (defgeneric hit (a b hit))
 
 (define-handler (player tick) (ev)
-  (when (jumpingp player) (jump player))
   (apply-gravity player)
   (vsetf (vel player)
          (vx (move-vel player))
