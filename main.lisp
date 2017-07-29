@@ -18,14 +18,20 @@
   (harmony-simple:stop))
 
 (define-subject sidescroll-camera* (sidescroll-camera)
-  ()
+  ((view-scale :initform 1.0 :accessor view-scale))
   (:default-initargs :name :camera))
 
 (defmethod setup-perspective :after ((camera sidescroll-camera*) ev)
-  (setf (zoom camera) (/ (width ev) 2048))
+  (setf (view-scale camera) (/ (width ev) 2048))
   (vsetf (location camera)
-         (/ (width ev) (zoom camera) 2)
-         (/ (height ev) (zoom camera) 3/2)))
+         (/ (width ev) (view-scale camera) 2)
+         (/ (height ev) (view-scale camera) 3/2)))
+
+(defmethod project-view ((camera sidescroll-camera*) ev)
+  (let ((z (* (view-scale camera) (zoom camera))))
+    (reset-matrix *view-matrix*)
+    (scale-by z z z *view-matrix*)
+    (translate (v- (location camera) (location (target camera))) *view-matrix*)))
 
 (progn
   (defmethod setup-scene ((main main))
