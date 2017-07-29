@@ -22,7 +22,6 @@
   (if (eql :backspace key)
       (let* ((camera (unit :camera *loop*))
              (old-target (target camera)))
-        (v:log :warn :editor "Bluh bluh ~a" (if (active editor) "true" "false"))
         (setf (active editor) (not (active editor))
               (target camera) (if (and (eql editor old-target)
                                        (not (active editor))
@@ -31,7 +30,8 @@
                                   editor)
               (camera-target editor) (if (eql old-target editor)
                                          (camera-target editor)
-                                         old-target)))
+                                         old-target))
+        (v:log :warn :editor "Bluh bluh ~a" (if (active editor) "true" "false")))
       (when (active editor)
         (case key
           (:w (setf (vy (velocity editor)) (- 2.0)))
@@ -40,9 +40,11 @@
           (:d (setf (vx (velocity editor)) (+ 2.0))))
         (cond ((and (eql :edit (mode editor)) (selected editor))
                (case key
-                 (:delete (leave (selected editor) *loop*))))
+                 (:delete
+                  (leave (selected editor) *loop*)
+                  (setf (selected editor) NIL))))
               ((and (eql :place (mode editor)) (placeable editor))
-               (v:log :warn :editor "Change placeable here?"))))))
+               (v:log :warn :editor "Change placeable per number key here?"))))))
 
 (define-handler (editor key-release) (ev key)
   (when (active editor)
