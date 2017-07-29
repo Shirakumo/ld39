@@ -7,7 +7,8 @@
 (in-package #:org.shirakumo.fraf.ld39)
 
 (defclass main (trial:main)
-  ())
+  ()
+  (:default-initargs :clear-color (vec 0.25 0.25 0.25 1)))
 
 (defmethod initialize-instance :after ((main main) &key)
   (harmony-simple:start)
@@ -20,8 +21,14 @@
   (defmethod setup-scene ((main main))
     (let ((scene (scene main)))
       (enter (make-instance 'editor) scene)
+      (enter (make-instance 'player) scene)
+      (loop for y from 256 to 5000 by 384
+            do (loop for x from 0 to 5000 by 384
+                     do (enter (make-instance 'crate :location (vec x y 0))
+                               scene)))
       (enter (make-instance 'sidescroll-camera :name :camera
-                                               :target (unit :editor scene))
+                                               :location (vec 200 150 -10)
+                                               :target (unit :player scene))
              scene)))
   (maybe-reload-scene))
 
