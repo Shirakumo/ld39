@@ -20,19 +20,24 @@
 (define-action movement ())
 
 (define-action jump (movement)
-  (key-press (one-of key :space)))
+  (key-press (one-of key :space))
+  (gamepad-press (one-of button :x)))
 
 (define-action start-left (movement)
-  (key-press (one-of key :a :left)))
+  (key-press (one-of key :a :left))
+  (gamepad-move (eql axis :left-h) (< pos -0.2 old-pos)))
 
 (define-action start-right (movement)
-  (key-press (one-of key :d :right)))
+  (key-press (one-of key :d :right))
+  (gamepad-move (eql axis :left-h) (< old-pos 0.2 pos)))
 
 (define-action end-left (movement)
-  (key-release (one-of key :a :left)))
+  (key-release (one-of key :a :left))
+  (gamepad-move (eql axis :left-h) (< old-pos -0.2 pos)))
 
 (define-action end-right (movement)
-  (key-release (one-of key :d :right)))
+  (key-release (one-of key :d :right))
+  (gamepad-move (eql axis :left-h) (< pos 0.2 old-pos)))
 
 (define-shader-subject player (base-entity solid-entity)
   ((vacc :initarg :vacc :accessor vacc)
