@@ -22,7 +22,8 @@
   (if (eql :backspace key)
       (let* ((camera (unit :camera *loop*))
              (old-target (target camera)))
-        (setf (active editor) (not (mode editor))
+        (v:log :warn :editor "Bluh bluh ~a" (if (active editor) "true" "false"))
+        (setf (active editor) (not (active editor))
               (target camera) (if (and (eql editor old-target)
                                        (not (active editor))
                                        (camera-target editor))
@@ -40,7 +41,8 @@
         (cond ((and (eql :edit (mode editor)) (selected editor))
                (case key
                  (:delete (leave (selected editor) *loop*))))
-              ((and (eql :place (mode editor)) (placeable editor)))))))
+              ((and (eql :place (mode editor)) (placeable editor))
+               (v:log :warn :editor "Change placeable here?"))))))
 
 (define-handler (editor key-release) (ev key)
   (when (active editor)
@@ -53,9 +55,9 @@
         (:d (setf (vx (velocity editor)) (min x 0)))))))
 
 (define-handler (editor mouse-move) (ev pos)
+  (setf (mouse-pos editor) (screen->vec pos (width *context*) (height *context*)))
   (when (and (active editor) (placeable editor))
-    (setf (mouse-pos editor) (screen->vec pos (width *context*) (height *context*))
-          (location (placeable editor)) (mouse-pos editor))))
+    (setf (location (placeable editor)) (mouse-pos editor))))
 
 (define-handler (editor mouse-press) (ev button)
   (when (active editor)
@@ -70,10 +72,10 @@
       (:left
        (case (mode editor)
          (:place
-          (let* ((object (placeable editor))
-                 (pos (location object)))
+          (let ((object (placeable editor)))
             (when object
-              (v:log :warn :editor "Add item ~a to ~a,~a" (name object) (vx pos) (vy pos)))))
+              (let ((pos (location object)))
+                (v:log :warn :editor "Add item ~a to ~a,~a" (name object) (vx pos) (vy pos))))))
          (:edit
           (let ((pos (mouse-pos editor)))
             (v:log :warn :editor "Select item at ~a,~a" (vx pos) (vy pos)))))))))
