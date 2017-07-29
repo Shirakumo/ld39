@@ -7,7 +7,7 @@
 (in-package #:org.shirakumo.fraf.ld39)
 
 (defclass main (trial:main)
-  ()
+  ((map-file :initarg :map-file :initform NIL :accessor map-file))
   (:default-initargs :clear-color (vec 0.1 0.1 0.1 1)))
 
 (defmethod initialize-instance :after ((main main) &key)
@@ -41,15 +41,18 @@
 (progn
   (defmethod setup-scene ((main main))
     (let ((scene (scene main)))
-      (loop repeat 10 for x from 0 by 512
-            do (enter (make-instance (alexandria:random-elt '(pipe-0 pipe-1 pipe-2 pipe-3)) :location (vec x -128 0)) scene))
-      (enter (make-instance 'ground :size (vec 10000 512) :location (vec 0 (+ 64 256) 0)) scene)
-      (loop repeat 10 for x from 0 by 256
-            do (enter (make-instance 'ground :size (vec 64 128) :location (vec x -128 0)) scene))
-      (enter (make-instance 'player) scene)
-      (enter (make-instance 'editor) scene)
-      (enter (make-instance 'sidescroll-camera* :target (unit :player scene))
-             scene)))
+      (cond ((map-file main)
+             (load-map (map-file main)))
+            (T
+             (loop repeat 10 for x from 0 by 512
+                   do (enter (make-instance (alexandria:random-elt '(pipe-0 pipe-1 pipe-2 pipe-3)) :location (vec x -128 0)) scene))
+             (enter (make-instance 'ground :size (vec 10000 512) :location (vec 0 (+ 64 256) 0)) scene)
+             (loop repeat 10 for x from 0 by 256
+                   do (enter (make-instance 'ground :size (vec 64 128) :location (vec x -128 0)) scene))
+             (enter (make-instance 'player) scene)
+             (enter (make-instance 'editor) scene)
+             (enter (make-instance 'sidescroll-camera* :target (unit :player scene))
+                    scene)))))
   (maybe-reload-scene))
 
 (define-shader-pass black-render-pass* (black-render-pass)

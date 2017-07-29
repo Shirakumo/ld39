@@ -38,7 +38,8 @@
 
 (define-handler (editor load-map) (ev)
   (format *standard-output* "Load from > ")
-  (load-map (read-line *standard-input*)))
+  (setf (map-file (window :main)) (pathname (read-line *standard-input*)))
+  (maybe-reload-scene))
 
 (define-handler (editor toggle-overlay) (ev)
   (setf (active editor) (not (active editor)))
@@ -186,7 +187,8 @@
         (map-path (pool-path 'ld39 map)))
     (when data
       (with-open-file (stream map-path :direction :output
-                                       :if-exists :overwrite)
+                                       :if-exists :overwrite
+                                       :if-does-not-exist :create)
         (format stream "~s" data)))))
 
 (defun load-map (map &optional (scene *loop*))
