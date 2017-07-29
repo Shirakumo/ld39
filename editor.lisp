@@ -9,6 +9,12 @@
 (define-action delete-object ()
   (key-press (one-of key :delete :backspace)))
 
+(define-action save-map ()
+  (key-press (one-of key :f12)))
+
+(define-action load-map ()
+  (key-press (one-of key :f11)))
+
 (define-subject editor (located-entity)
   ((active :initarg :active :accessor active)
    (mode :initform :place :accessor mode)
@@ -24,6 +30,14 @@
   (when (selected editor)
     (leave (selected editor) *loop*)
     (setf (selected editor) NIL)))
+
+(define-handler (editor save-map) (ev)
+  (format *standard-output* "Save to > ")
+  (save-map (read-line *standard-input*)))
+
+(define-handler (editor load-map) (ev)
+  (format *standard-output* "Load from > ")
+  (load-map (read-line *standard-input*)))
 
 (define-handler (editor toggle-overlay) (ev)
   (setf (active editor) (not (active editor)))
@@ -142,3 +156,43 @@
 
 (defun snap (vec size)
   (v* (vapplyf vec round size size size size) size))
+
+(defun save-map (map)
+  (let ((data (for:for ((unit in (sized-units))
+                        (data collecting (list (class-name (class-of unit))
+                                               (name unit)
+                                               (vx (location unit))
+                                               (vy (location unit))
+                                               (vz (location unit))
+                                               (vx (size unit))
+                                               (vy (size unit)))))
+                (returning data)))
+        (map-path (pool-path 'ld39 map)))
+    (when data
+      (with-open-file (stream map-path :direction :output
+                                       :if-exists :overwrite)
+        (format stream "~a" data)))))
+
+(defun load-map (map)
+  (let ((units (with-open-file (stream (pool-path 'ld39 map))
+                 (let ((data (make-string (file-length stream))))
+                   (read-sequence data stream)
+                   (read-from-string data)))))
+    (for:for ((unit in (sized-units)))
+      (leave unit *loop*))
+    (loop for (class name loc-x loc-y loc-z size-x size-y) in units
+          do (enter (make-instance (find-symbol (string class) 'ld39)
+                                   :name (make-symbol (format NIL "~a" name))
+                                   :location (vec loc-x loc-y loc-z)
+                                   :size (vec size-x size-y))
+                    *loop*))
+    (maybe-reload-scene)))
+
+(defun sized-units ()
+  (let ((superclass (class-name (find-class 'sized-entity)))
+        (units))
+    (for:for ((unit in (units *loop*))
+              (class = (class-name (class-of unit))))
+      (when (subtypep class superclass)
+        (push unit units)))
+    units))
