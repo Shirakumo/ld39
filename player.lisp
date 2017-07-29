@@ -36,7 +36,7 @@
    (max-jump-count :initarg :max-jump-count :accessor max-jump-count))
   (:default-initargs
    :name :player
-   :texture (asset 'ld39 'tire)
+   :texture (asset 'ld39 'tire-0)
    :vertex-array (asset 'ld39 '128x)
    :max-jump-count 2
    :vacc (vec 0.2 -15 0)
