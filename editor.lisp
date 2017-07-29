@@ -180,12 +180,12 @@
                    (read-from-string data)))))
     (for:for ((unit in (sized-units)))
       (leave unit *loop*))
-    (loop for (class name loc-x loc-y loc-z size-x size-y) in units
-          do (enter (make-instance (find-symbol (string class) 'ld39)
-                                   :name (make-symbol (format NIL "~a" name))
-                                   :location (vec loc-x loc-y loc-z)
-                                   :size (vec size-x size-y))
-                    *loop*))
+    (for:for (((class name loc-x loc-y loc-z size-x size-y) in units))
+      (enter (make-instance (find-symbol (string class) 'ld39)
+                            :name (make-symbol (format NIL "~a" name))
+                            :location (vec loc-x loc-y loc-z)
+                            :size (vec size-x size-y))
+             *loop*))
     (maybe-reload-scene)))
 
 (defun sized-units ()
