@@ -36,6 +36,7 @@
       (loop repeat 10 for x from 0 by 256
             do (enter (make-instance 'ground :size (vec 64 128) :location (vec x -128 0)) scene))
       (enter (make-instance 'player) scene)
+      (enter (make-instance 'editor) scene)
       (enter (make-instance 'sidescroll-camera* :target (unit :player scene))
              scene)))
   (maybe-reload-scene))

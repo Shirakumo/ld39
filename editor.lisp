@@ -9,52 +9,52 @@
 (define-subject editor (located-entity)
   ((active :initarg :active :accessor active)
    (mode :initform :place :accessor mode)
-   (velocity :initform (vec 0 0 0) :accessor velocity)
+   (vel :initform (vec 0 0 0) :accessor vel)
    (selected :initform NIL :accessor selected)
    (placeable :initform NIL :accessor placeable)
-   (mouse-pos :initform (vec 0 0 0) :accessor mouse-pos)
-   (camera-target :initform NIL :accessor camera-target))
+   (mouse-pos :initform (vec 0 0 0) :accessor mouse-pos))
   (:default-initargs :name :editor
                      :active NIL))
 
 (define-handler (editor key-press) (ev key)
-  ;; TODO: clean this up
-  (if (eql :backspace key)
-      (let* ((camera (unit :camera *loop*))
-             (old-target (target camera)))
-        (setf (active editor) (not (active editor))
-              (target camera) (if (and (eql editor old-target)
-                                       (not (active editor))
-                                       (camera-target editor))
-                                  (camera-target editor)
-                                  editor)
-              (camera-target editor) (if (eql old-target editor)
-                                         (camera-target editor)
-                                         old-target))
-        (v:log :warn :editor "Bluh bluh ~a" (if (active editor) "true" "false")))
-      (when (active editor)
-        (case key
-          (:w (setf (vy (velocity editor)) (- 2.0)))
-          (:a (setf (vx (velocity editor)) (- 2.0)))
-          (:s (setf (vy (velocity editor)) (+ 2.0)))
-          (:d (setf (vx (velocity editor)) (+ 2.0))))
-        (cond ((and (eql :edit (mode editor)) (selected editor))
-               (case key
-                 (:delete
-                  (leave (selected editor) *loop*)
-                  (setf (selected editor) NIL))))
-              ((and (eql :place (mode editor)) (placeable editor))
-               (v:log :warn :editor "Change placeable per number key here?"))))))
+  (case key
+    (:backspace
+     (setf (active editor) (not (active editor)))
+     (cond ((active editor)
+            (setf (target (unit :camera *loop*)) editor)
+            (setf (location editor) (vcopy (location (unit :player *loop*))))
+            (remove-handler (unit :player *loop*) *loop*))
+           (T
+            (setf (target (unit :camera *loop*)) (unit :player *loop*))
+            (add-handler (unit :player *loop*) *loop*))))
+    (T
+     (when (active editor)
+       (case key
+         (:w (setf (vy (vel editor)) (- 10.0)))
+         (:a (setf (vx (vel editor)) (- 10.0)))
+         (:s (setf (vy (vel editor)) (+ 10.0)))
+         (:d (setf (vx (vel editor)) (+ 10.0))))
+       (case (mode editor)
+         (:edit (when (selected editor)
+                  (case key
+                    (:delete
+                     (leave (selected editor) *loop*)
+                     (setf (selected editor) NIL)))))
+         (:place (when (selected editor)
+                   )))))))
 
 (define-handler (editor key-release) (ev key)
   (when (active editor)
-    (let ((x (vx (velocity editor)))
-          (y (vy (velocity editor))))
+    (let ((x (vx (vel editor)))
+          (y (vy (vel editor))))
       (case key
-        (:w (setf (vy (velocity editor)) (max y 0)))
-        (:a (setf (vx (velocity editor)) (max x 0)))
-        (:s (setf (vy (velocity editor)) (min y 0)))
-        (:d (setf (vx (velocity editor)) (min x 0)))))))
+        (:w (setf (vy (vel editor)) (max y 0)))
+        (:a (setf (vx (vel editor)) (max x 0)))
+        (:s (setf (vy (vel editor)) (min y 0)))
+        (:d (setf (vx (vel editor)) (min x 0)))))))
+
+(define-handler (editor tick) (ev)
+  (nv+ (location editor) (vel editor)))
 
 (define-handler (editor mouse-move) (ev pos)
   (setf (mouse-pos editor) (screen->vec pos (width *context*) (height *context*)))
@@ -70,7 +70,8 @@
           (setf (mode editor) :edit))
          (:edit
           (setf (mode editor) :place
-                (selected editor) NIL))))
+                (selected editor) NIL)))
+       (v:info :editor "Mode: ~a" (mode editor)))
       (:left
        (case (mode editor)
          (:place
