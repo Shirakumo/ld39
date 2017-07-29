@@ -7,69 +7,86 @@
 (in-package #:org.shirakumo.fraf.ld39)
 
 (define-asset (ld39 tire) texture
-    (#p"tire-1.png")
-  :mag-filter :nearest)
+    (#p"tire-1.png"))
 
 (define-asset (ld39 crate) texture
-    (#p"crate-0.png")
-  :mag-filter :nearest)
+    (#p"crate-0.png"))
 
 (define-shader-subject crate (base-entity solid-entity)
   ()
   (:default-initargs
    :texture (asset 'ld39 'crate)))
 
-(define-action jump ()
-  (key-press (one-of key :space)))
+(define-action movement ())
+
+(define-action jump (movement)
+  (key-press (one-of key :space))
+  (gamepad-press (one-of button :x)))
+
+(define-action start-left (movement)
+  (key-press (one-of key :a :left))
+  (gamepad-move (eql axis :left-h) (< pos -0.2 old-pos)))
+
+(define-action start-right (movement)
+  (key-press (one-of key :d :right))
+  (gamepad-move (eql axis :left-h) (< old-pos 0.2 pos)))
+
+(define-action end-left (movement)
+  (key-release (one-of key :a :left))
+  (gamepad-move (eql axis :left-h) (< old-pos -0.2 pos)))
+
+(define-action end-right (movement)
+  (key-release (one-of key :d :right))
+  (gamepad-move (eql axis :left-h) (< pos 0.2 old-pos)))
 
 (define-shader-subject player (base-entity solid-entity)
-  ((move-vel :initform (vec 0 0 0)
-             :accessor move-vel)
-   (jumpingp :initform nil
-             :accessor jumpingp)
-   (jump-count :initarg :jump-count
-               :initform 0
-               :accessor jump-count)
-   (max-jump-count :initarg :max-jump-count
-                   :initform 2
-                   :accessor max-jump-count)
-   (jump-speed :initarg :jump-speed
-               :initform -5
-               :accessor jump-speed))
-  (:default-initargs :name :player
-                     :texture (asset 'ld39 'tire)
-                     :vertex-array (asset 'ld39 '128x)))
+  ((vacc :initarg :vacc :accessor vacc)
+   (vdcc :initarg :vdcc :accessor vdcc)
+   (vlim :initarg :vlim :accessor vlim)
+   (jump-count :initform 0 :accessor jump-count)
+   (max-jump-count :initarg :max-jump-count :accessor max-jump-count))
+  (:default-initargs
+   :name :player
+   :texture (asset 'ld39 'tire)
+   :vertex-array (asset 'ld39 '128x)
+   :max-jump-count 2
+   :vacc (vec 0.2 -15 0)
+   :vdcc (vec 0.4 0.5 0)
+   :vlim (vec 15 20 0)))
 
-(defun jump (player)
+(define-retention movement (ev)
+  (typecase ev
+    (start-left (setf (retained 'movement :left) T))
+    (start-right (setf (retained 'movement :right) T))
+    (end-left (setf (retained 'movement :left) NIL))
+    (end-right (setf (retained 'movement :right) NIL))))
+
+(define-handler (player jump) (ev key)
   (when (and (< (jump-count player) (max-jump-count player))
-             (>= (vy (move-vel player)) 0.0))
-    (setf (vy (move-vel player)) (jump-speed player))
+             (>= (vy (vel player)) 0.0))
+    (setf (vy (vel player)) (vy (vacc player)))
     (incf (jump-count player))))
-
-(defun apply-gravity (player)
-  (with-accessors ((vy vy)) (move-vel player)
-    (setf vy (min (+ vy 0.15) 9.81))))
-
-(define-handler (player key-press) (ev key)
-  (case key
-    (:a (setf (vx (move-vel player)) (- 3.5)))
-    (:d (setf (vx (move-vel player)) (+ 3.5)))
-    (:space (setf (jumpingp player) t))))
-
-(define-handler (player key-release) (ev key)
-  (case key
-    (:a (setf (vx (move-vel player)) (max 0 (vx (move-vel player)))))
-    (:d (setf (vx (move-vel player)) (min 0 (vx (move-vel player)))))
-    (:space (setf (jumpingp player) nil))))
 
 (defgeneric hit (a b hit))
 
 (define-handler (player tick) (ev)
-  (when (jumpingp player) (jump player))
-  (apply-gravity player)
-  (vsetf (vel player)
-         (vx (move-vel player))
-         (vy (move-vel player)))
+  (let ((vel (vel player)))
+    (cond ((retained 'movement :left)
+           (decf (vx vel) (vx (vacc player)))
+           (when (< 0 (vx vel))
+             (decf (vx vel) (vx (vdcc player)))))
+          ((retained 'movement :right)
+           (incf (vx vel) (vx (vacc player)))
+           (when (< (vx vel) 0)
+             (incf (vx vel) (vx (vdcc player)))))
+          ((< (abs (vx vel)) (vx (vdcc player)))
+           (setf (vx vel) 0))
+          ((< 0 (vx vel))
+           (decf (vx vel) (vx (vdcc player))))
+          (T
+           (incf (vx vel) (vx (vdcc player))))))
+  
+  (incf (vy (vel player)) (vy (vdcc player)))
   (let ((nearest-hit NIL))
     (loop repeat 2
           do (setf nearest-hit NIL)
@@ -82,15 +99,16 @@
                      (setf nearest-hit hit)))))
           while nearest-hit
           do (hit (hit-a nearest-hit) (hit-b nearest-hit) nearest-hit)))
+  (nvclamp (v- (vlim player)) (vel player) (vlim player))
   (nv+ (location player) (vel player)))
 
 (defmethod hit ((player player) (entity sized-entity) hit)
   (when (< (vy (hit-normal hit)) 0.0)
     (setf (jump-count player) 0
-          (vy (move-vel player)) 0.0
+          (vy (vel player)) 0.0
           (vy (vel player)) 0.0))
   (when (> (vy (hit-normal hit)) 0.0)
-    (setf (vy (move-vel player)) 0.0))
+    (setf (vy (vel player)) 0.0))
   (vsetf (location player)
          (vx (hit-pos hit))
          (vy (hit-pos hit))
