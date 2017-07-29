@@ -8,7 +8,7 @@
 
 (defclass main (trial:main)
   ()
-  (:default-initargs :clear-color (vec 0.2 0.2 0.2 1)))
+  (:default-initargs :clear-color (vec 0.1 0.1 0.1 1)))
 
 (defmethod initialize-instance :after ((main main) &key)
   (harmony-simple:start)
@@ -58,7 +58,7 @@
     (let ((pipeline (pipeline main))
           (pass1 (make-instance 'render-pass))
           (pass2 (make-instance 'black-render-pass*))
-          (pass3 (make-instance 'light-scatter-pass* :uniforms `(("origin" ,(vec 0.7 1))))))
+          (pass3 (make-instance 'light-scatter-pass*)))
       (register pass1 pipeline)
       (connect (port pass1 'color) (port pass3 'previous-pass) pipeline)
       (connect (port pass2 'color) (port pass3 'black-render-pass) pipeline)))

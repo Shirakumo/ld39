@@ -44,7 +44,7 @@
   (:default-initargs
    :velocity (vec 0 0 0)
    :vertex-array (asset 'ld39 '128x)
-   :axis +vz+))
+   :axis +vy+))
 
 (define-shader-subject decoration (vertex-subject
                                    textured-subject

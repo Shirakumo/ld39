@@ -55,7 +55,10 @@
     (end-up (setf (retained 'movement :up) NIL))
     (end-down (setf (retained 'movement :down) NIL))))
 
-(define-shader-subject player (base-entity solid-entity)
+(define-asset (ld39 player) texture
+    (#p"walk.png"))
+
+(define-shader-subject player (animated-sprite-subject base-entity solid-entity)
   ((vacc :initarg :vacc :accessor vacc)
    (vdcc :initarg :vdcc :accessor vdcc)
    (vlim :initarg :vlim :accessor vlim)
@@ -63,8 +66,9 @@
    (max-jump-count :initarg :max-jump-count :accessor max-jump-count))
   (:default-initargs
    :name :player
-   :texture (asset 'ld39 'tire-0)
+   :texture (asset 'ld39 'player)
    :vertex-array (asset 'ld39 '128x)
+   :animations '((0.75 12))
    :max-jump-count 2
    :vacc (vec 0.2 -15 0)
    :vdcc (vec 0.4 0.5 0)
@@ -81,10 +85,12 @@
 (define-handler (player tick) (ev)
   (let ((vel (vel player)))
     (cond ((retained 'movement :left)
+           (setf (angle player) PI)
            (decf (vx vel) (vx (vacc player)))
            (when (< 0 (vx vel))
              (decf (vx vel) (vx (vdcc player)))))
           ((retained 'movement :right)
+           (setf (angle player) 0)
            (incf (vx vel) (vx (vacc player)))
            (when (< (vx vel) 0)
              (incf (vx vel) (vx (vdcc player)))))

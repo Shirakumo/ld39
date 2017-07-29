@@ -1,9 +1,9 @@
 uniform float density = 1.0;
-uniform float weight = 0.05;
-uniform float decay = 1.0;
+uniform float weight = 0.1;
+uniform float decay = 0.999;
 uniform float exposure = 1.0;
 uniform int samples = 100;
-uniform vec2 origin = vec2(0.5, 0.5);
+uniform vec2 origin = vec2(1, 1);
 uniform sampler2D black_render_pass;
 uniform sampler2D previous_pass;
 
