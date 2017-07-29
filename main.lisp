@@ -22,16 +22,17 @@
   (:default-initargs :name :camera))
 
 (defmethod setup-perspective :after ((camera sidescroll-camera*) ev)
-  (setf (location camera) (vec (/ (width ev) 2) (/ (height ev) 2) -10)))
+  (vsetf (location camera)
+         (/ (width ev) 2)
+         (/ (height ev) 3/2)))
 
 (progn
   (defmethod setup-scene ((main main))
     (let ((scene (scene main)))
       (enter (make-instance 'player) scene)
-      (loop for y from 256 to 5000 by 384
-            do (loop for x from 0 to 5000 by 384
-                     do (enter (make-instance 'crate :location (vec x y 0))
-                               scene)))
+      (enter (make-instance 'ground :size (vec 10000 512) :location (vec 0 (+ 64 256) 0)) scene)
+      (loop repeat 10 for x from 0 by 256
+            do (enter (make-instance 'ground :size (vec 64 128) :location (vec x -128 0)) scene))
       (enter (make-instance 'sidescroll-camera* :target (unit :player scene))
              scene)))
   (maybe-reload-scene))
