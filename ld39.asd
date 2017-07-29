@@ -7,6 +7,8 @@
 (in-package #:cl-user)
 (asdf:defsystem ld39
   :components ((:file "package")
+               (:file "base")
+               (:file "collision")
                (:file "player")
                (:file "editor")
                (:file "main"))
