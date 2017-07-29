@@ -22,7 +22,8 @@
    (selected :initform NIL :accessor selected)
    (to-place :initform (find-class 'ground) :accessor to-place)
    (start-pos :initform (vec 0 0 0) :accessor start-pos)
-   (mouse-pos :initform (vec 0 0 0) :accessor mouse-pos))
+   (mouse-pos :initform (vec 0 0 0) :accessor mouse-pos)
+   (drag-from :initform NIL :accessor drag-from))
   (:default-initargs :name :editor
                      :active NIL))
 
@@ -57,11 +58,11 @@
 
 (define-handler (editor tick) (ev)
   (when (active editor)
-    (cond ((retained 'movement :left) (setf (vx (vel editor)) -10))
-          ((retained 'movement :right) (setf (vx (vel editor)) +10))
+    (cond ((retained 'movement :left) (setf (vx (vel editor)) -20))
+          ((retained 'movement :right) (setf (vx (vel editor)) +20))
           (T (setf (vx (vel editor)) 0)))
-    (cond ((retained 'movement :up) (setf (vy (vel editor)) -10))
-          ((retained 'movement :down) (setf (vy (vel editor)) +10))
+    (cond ((retained 'movement :up) (setf (vy (vel editor)) -20))
+          ((retained 'movement :down) (setf (vy (vel editor)) +20))
           (T (setf (vy (vel editor)) 0)))
     (nv+ (location editor) (vel editor))))
 
@@ -77,7 +78,11 @@
           (:resize
            (setf (location selected) (v/ (v+ pos (start-pos editor)) 2))
            (setf (size selected) (vmax 32 (nvabs (vxy (v- pos (start-pos editor))))))
-           (load (offload selected))))))))
+           (load (offload selected)))
+          (:drag
+           (setf (location selected) pos))
+          (T (when (and (drag-from editor) (< 16 (vlength (v- pos (drag-from editor)))))
+               (setf (mode editor) :drag))))))))
 
 (define-handler (editor mouse-press) (ev button)
   (when (active editor)
@@ -106,8 +111,11 @@
                              pos
                              (v+ (location entity) s))
                     (v:log :info :editor "Selected ~a" entity)
-                    (setf (selected editor) entity)
-                    (return))))))))))))
+                    (setf (selected editor) entity
+                          (drag-from editor) pos)
+                    (return)))))
+            (when (selected editor)
+              (setf (drag-from editor) pos)))))))))
 
 (defun update-to-place (editor pos)
   (when (selected editor)
@@ -120,7 +128,10 @@
     (let ((pos (mouse-pos editor)))
       (case button
         (:left
+         (when (drag-from editor)
+           (setf (drag-from editor) NIL))
          (case (mode editor)
+           (:drag (setf (mode editor) :edit))
            (:place
             (when (selected editor)
               (setf (location (selected editor)) pos)
