@@ -103,3 +103,15 @@
     (when hit
       (setf (hit-a hit) a (hit-b hit) b)
       hit)))
+
+(defmethod test-collision ((a base-entity) (b sized-entity))
+  (let ((hit (test-sweep-aabb-vs-aabb
+              (vxy (location a))
+              (vxy (vel a))
+              (v/ (size a) 2)
+              (vxy (location b))
+              (vec 0 0)
+              (v/ (size b) 2))))
+    (when hit
+      (setf (hit-a hit) a (hit-b hit) b)
+      hit)))

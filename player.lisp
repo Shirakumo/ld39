@@ -14,7 +14,7 @@
     (#p"crate-0.png")
   :mag-filter :nearest)
 
-(define-shader-subject crate (base-entity)
+(define-shader-subject crate (base-entity solid-entity)
   ()
   (:default-initargs
    :texture (asset 'ld39 'crate)))
@@ -22,7 +22,7 @@
 (define-action jump ()
   (key-press (one-of key :space)))
 
-(define-shader-subject player (base-entity)
+(define-shader-subject player (base-entity solid-entity)
   ((move-vel :initform (vec 0 0 0)
              :accessor move-vel)
    (jumpingp :initform nil
@@ -84,7 +84,7 @@
           do (hit (hit-a nearest-hit) (hit-b nearest-hit) nearest-hit)))
   (nv+ (location player) (vel player)))
 
-(defmethod hit ((player player) (entity base-entity) hit)
+(defmethod hit ((player player) (entity sized-entity) hit)
   (when (< (vy (hit-normal hit)) 0.0)
     (setf (jump-count player) 0
           (vy (move-vel player)) 0.0
@@ -92,8 +92,8 @@
   (when (> (vy (hit-normal hit)) 0.0)
     (setf (vy (move-vel player)) 0.0))
   (vsetf (location player)
-         (round (vx (hit-pos hit)))
-         (round (vy (hit-pos hit)))
+         (vx (hit-pos hit))
+         (vy (hit-pos hit))
          (vz (location player)))
   (vsetf (vel player)
          (vx (hit-vel hit))

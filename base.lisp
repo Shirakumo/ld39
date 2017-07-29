@@ -17,14 +17,38 @@
 (defgeneric solidp (entity)
   (:method (entity) nil))
 
-(define-shader-subject base-entity (located-entity
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defclass sized-entity (located-entity)
+    ((size :initarg :size :accessor size))
+    (:default-initargs :size (vec 128 128)))
+
+  (defclass solid-entity (sized-entity)
+    ()))
+
+(defmethod solidp ((entity solid-entity))
+  T)
+
+(define-shader-subject base-entity (sized-entity
                                     axis-rotated-entity
                                     sprite-subject)
-  ((vel :initarg :velocity :accessor vel)
-   (solidp :initarg :solidp :accessor solidp))
+  ((vel :initarg :velocity :accessor vel))
   (:default-initargs
-   :size (vec 128 128)
    :velocity (vec 0 0 0)
-   :solidp t
    :vertex-array (asset 'ld39 '128x)
    :axis +vz+))
+
+(define-shader-subject ground (vertex-subject
+                               colored-subject
+                               solid-entity)
+  ()
+  (:default-initargs
+   :color (vec 0 0 0 1)))
+
+(defmethod initialize-instance :after ((ground ground) &key size)
+  (setf (vertex-array ground) (make-rectangle (vx size) (vy size))))
+
+(defmethod load progn ((ground ground))
+  (change-class (vertex-array ground) 'vertex-array :load T))
+
+(defmethod offload progn ((ground ground))
+  (offload (vertex-array ground)))
