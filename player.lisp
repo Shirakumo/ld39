@@ -101,7 +101,7 @@
           (T
            (incf (vx vel) (vx (vdcc player)))))
 
-    (setf (second (first (animations player))) (print (* 0.48 (/ (vx (vlim player)) (max 0.1 (abs (vx vel))))))))
+    (setf (second (first (animations player))) (* 0.48 (/ (vx (vlim player)) (max 0.1 (abs (vx vel)))))))
   
   (incf (vy (vel player)) (vy (vdcc player)))
   (let ((nearest-hit NIL))
