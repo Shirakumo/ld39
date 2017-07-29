@@ -28,11 +28,14 @@
 (define-handler (editor toggle-overlay) (ev)
   (setf (active editor) (not (active editor)))
   (cond ((active editor)
+         (setf (mode editor) :edit)
          (setf (target (unit :camera *loop*)) editor)
          (setf (location editor) (vcopy (location (unit :player *loop*))))
          (remove-handler (unit :player *loop*) *loop*)
          (v:info :editor "Activating editor mode."))
         (T
+         (when (and (selected editor) (find (mode editor) '(:place :resize)))
+           (leave (selected editor) *loop*))
          (setf (selected editor) NIL)
          (setf (target (unit :camera *loop*)) (unit :player *loop*))
          (add-handler (unit :player *loop*) *loop*)
@@ -119,7 +122,7 @@
             (update-to-place editor pos))))))))
 
 (define-handler (editor mouse-scroll) (ev delta)
-  (when (active editor)
+  (when (and (active editor) (eql :place (mode editor)))
     (let* ((classes (find-leaf-classes (find-class 'sized-entity)))
            (pos (or (position (to-place editor) classes) 0)))
       (setf pos (mod (+ pos (if (< 0 delta) 1 -1)) (length classes)))
@@ -132,7 +135,8 @@
       (loop with classes = ()
             for sub in (c2mop:class-direct-subclasses base-class)
             do (dolist (leaf (find-leaf-classes sub))
-                 (pushnew leaf classes))
+                 (unless (eql leaf (find-class 'player))
+                   (pushnew leaf classes)))
             finally (return classes))
       (list base-class)))
 
