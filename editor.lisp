@@ -150,7 +150,8 @@
 
 (define-handler (editor mouse-scroll) (ev delta)
   (when (and (active editor))
-    (cond ((or (retained 'key :control) (retained 'key :left-control))
+    (cond ((or (retained 'key :control) (retained 'key :left-control)
+               (retained 'key :control-l) (retained 'key :control-r))
            (let ((camera (unit :camera *loop*)))
              (setf (zoom camera) (* (zoom camera) (if (< 0 delta) 1.5 (/ 1.5))))))
           ((eql :place (mode editor))
