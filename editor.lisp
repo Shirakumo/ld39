@@ -196,7 +196,7 @@
                    (read-from-string data)))))
     (clear scene)
     (for:for (((class name loc-x loc-y loc-z size-x size-y) in units))
-      (enter (make-instance (find-symbol (string class) 'ld39)
+      (enter (make-instance class
                             :name name
                             :location (vec loc-x loc-y loc-z)
                             :size (vec size-x size-y))
