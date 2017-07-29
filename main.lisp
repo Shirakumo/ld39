@@ -19,7 +19,10 @@
 (progn
   (defmethod setup-scene ((main main))
     (let ((scene (scene main)))
-      (enter (make-instance 'sidescroll-camera :name :camera) scene)))
+      (enter (make-instance 'editor) scene)
+      (enter (make-instance 'sidescroll-camera :name :camera
+                                               :target (unit :editor scene))
+             scene)))
   (maybe-reload-scene))
 
 
