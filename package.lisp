@@ -8,5 +8,5 @@
 (defpackage #:ld39
   (:nicknames #:org.shirakumo.fraf.ld39)
   (:use #:cl+trial)
-  (:shadow #:launch #:main)
+  (:shadow #:launch #:main #:sized-entity)
   (:export #:launch))

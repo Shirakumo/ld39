@@ -6,60 +6,59 @@
 
 (in-package #:org.shirakumo.fraf.ld39)
 
+(define-action delete-object ()
+  (key-press (one-of key :delete :backspace)))
+
 (define-subject editor (located-entity)
   ((active :initarg :active :accessor active)
    (mode :initform :place :accessor mode)
    (vel :initform (vec 0 0 0) :accessor vel)
    (selected :initform NIL :accessor selected)
-   (placeable :initform NIL :accessor placeable)
+   (to-place :initform (find-class 'ground) :accessor to-place)
+   (start-pos :initform (vec 0 0 0) :accessor start-pos)
    (mouse-pos :initform (vec 0 0 0) :accessor mouse-pos))
   (:default-initargs :name :editor
                      :active NIL))
 
-(define-handler (editor key-press) (ev key)
-  (case key
-    (:backspace
-     (setf (active editor) (not (active editor)))
-     (cond ((active editor)
-            (setf (target (unit :camera *loop*)) editor)
-            (setf (location editor) (vcopy (location (unit :player *loop*))))
-            (remove-handler (unit :player *loop*) *loop*))
-           (T
-            (setf (target (unit :camera *loop*)) (unit :player *loop*))
-            (add-handler (unit :player *loop*) *loop*))))
-    (T
-     (when (active editor)
-       (case key
-         (:w (setf (vy (vel editor)) (- 10.0)))
-         (:a (setf (vx (vel editor)) (- 10.0)))
-         (:s (setf (vy (vel editor)) (+ 10.0)))
-         (:d (setf (vx (vel editor)) (+ 10.0))))
-       (case (mode editor)
-         (:edit (when (selected editor)
-                  (case key
-                    (:delete
-                     (leave (selected editor) *loop*)
-                     (setf (selected editor) NIL)))))
-         (:place (when (selected editor)
-                   )))))))
+(define-handler (editor delete-object) (ev)
+  (when (selected editor)
+    (leave (selected editor) *loop*)
+    (setf (selected editor) NIL)))
 
-(define-handler (editor key-release) (ev key)
-  (when (active editor)
-    (let ((x (vx (vel editor)))
-          (y (vy (vel editor))))
-      (case key
-        (:w (setf (vy (vel editor)) (max y 0)))
-        (:a (setf (vx (vel editor)) (max x 0)))
-        (:s (setf (vy (vel editor)) (min y 0)))
-        (:d (setf (vx (vel editor)) (min x 0)))))))
+(define-handler (editor toggle-overlay) (ev)
+  (setf (active editor) (not (active editor)))
+  (cond ((active editor)
+         (setf (target (unit :camera *loop*)) editor)
+         (setf (location editor) (vcopy (location (unit :player *loop*))))
+         (remove-handler (unit :player *loop*) *loop*)
+         (v:info :editor "Activating editor mode."))
+        (T
+         (setf (selected editor) NIL)
+         (setf (target (unit :camera *loop*)) (unit :player *loop*))
+         (add-handler (unit :player *loop*) *loop*)
+         (v:info :editor "Deactivating editor mode."))))
 
 (define-handler (editor tick) (ev)
+  (cond ((retained 'movement :left) (setf (vx (vel editor)) -10))
+        ((retained 'movement :right) (setf (vx (vel editor)) +10))
+        (T (setf (vx (vel editor)) 0)))
+  (cond ((retained 'movement :up) (setf (vy (vel editor)) -10))
+        ((retained 'movement :down) (setf (vy (vel editor)) +10))
+        (T (setf (vy (vel editor)) 0)))
   (nv+ (location editor) (vel editor)))
 
 (define-handler (editor mouse-move) (ev pos)
-  (setf (mouse-pos editor) (screen->vec pos (width *context*) (height *context*)))
-  (when (and (active editor) (placeable editor))
-    (setf (location (placeable editor)) (mouse-pos editor))))
+  (let ((pos (snap (screen->vec pos (width *context*) (height *context*)) 32))
+        (selected (selected editor)))
+    (setf (mouse-pos editor) pos)
+    (when selected
+      (case (mode editor)
+        (:place
+         (setf (location selected) pos))
+        (:resize
+         (setf (location selected) (v/ (v+ pos (start-pos editor)) 2))
+         (setf (size selected) (vmax 32 (nvabs (vxy (v- pos (start-pos editor))))))
+         (load (offload selected)))))))
 
 (define-handler (editor mouse-press) (ev button)
   (when (active editor)
@@ -71,18 +70,59 @@
          (:edit
           (setf (mode editor) :place
                 (selected editor) NIL)))
-       (v:info :editor "Mode: ~a" (mode editor)))
+       (v:info :editor "Changed mode to ~a" (mode editor)))
       (:left
        (case (mode editor)
          (:place
-          (let ((object (placeable editor)))
-            (when object
-              (let ((pos (location object)))
-                (v:log :warn :editor "Add item ~a to ~a,~a" (name object) (vx pos) (vy pos))))))
+          (let ((pos (mouse-pos editor)))
+            (setf (selected editor) (load (make-instance (to-place editor) :location pos)))
+            (setf (start-pos editor) pos)
+            (enter (selected editor) *loop*)))
+         (:resize
+          (setf (selected editor) NIL)
+          (setf (mode editor) :place))
          (:edit
           (let ((pos (mouse-pos editor)))
-            (v:log :warn :editor "Select item at ~a,~a" (vx pos) (vy pos)))))))))
+            (for:for ((entity over *loop*))
+              (when (and (typep entity 'sized-entity)
+                         (not (eql entity (selected editor))))
+                (let ((s (nv/ (vxy_ (size entity)) 2)))
+                  (when (v<= (v- (location entity) s)
+                             pos
+                             (v+ (location entity) s))
+                    (v:log :info :editor "Selected ~a" entity)
+                    (setf (selected editor) entity)
+                    (return))))))))))))
 
-(defmethod paint ((editor editor) target)
-  (when (and (active editor) (eql :place (mode editor)) (placeable editor))
-    (paint (placeable editor))))
+(define-handler (editor mouse-release) (ev button)
+  (case button
+    (:left
+     (case (mode editor)
+       (:place
+        (when (selected editor)
+          (let ((pos (mouse-pos editor)))
+            (setf (location (selected editor)) pos)
+            (setf (start-pos editor) pos)
+            (cond ((eql (find-class 'ground) (to-place editor))
+                   (setf (mode editor) :resize))
+                  (T
+                   (setf (selected editor) NIL))))))))))
+
+(define-handler (editor mouse-scroll) (ev delta)
+  (let* ((classes (find-leaf-classes (find-class 'sized-entity)))
+         (pos (or (position (to-place editor) classes) 0)))
+    (setf pos (mod (+ pos (if (< 0 delta) 1 -1)) (length classes)))
+    (setf (to-place editor) (nth pos classes))
+    (v:info :editor "Selecting ~a" (to-place editor))))
+
+(defun find-leaf-classes (base-class)
+  (if (c2mop:class-direct-subclasses base-class)
+      (loop with classes = ()
+            for sub in (c2mop:class-direct-subclasses base-class)
+            do (dolist (leaf (find-leaf-classes sub))
+                 (pushnew leaf classes))
+            finally (return classes))
+      (list base-class)))
+
+(defun snap (vec size)
+  (v* (vapplyf vec round size size size size) size))

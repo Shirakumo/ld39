@@ -60,11 +60,11 @@
   (:default-initargs
    :color (vec 0 0 0 1)))
 
-(defmethod initialize-instance :after ((ground ground) &key size)
-  (setf (vertex-array ground) (make-rectangle (vx size) (vy size))))
-
-(defmethod load progn ((ground ground))
-  (change-class (vertex-array ground) 'vertex-array :load T))
+(defmethod load :around ((ground ground))
+  (setf (vertex-array ground) (make-rectangle (vx (size ground)) (vy (size ground))))
+  (change-class (vertex-array ground) 'vertex-array :load T)
+  (call-next-method))
 
 (defmethod offload progn ((ground ground))
-  (offload (vertex-array ground)))
+  (offload (vertex-array ground))
+  (setf (vertex-array ground) NIL))

@@ -20,6 +20,14 @@
   (key-press (one-of key :d :right))
   (gamepad-move (eql axis :left-h) (< old-pos 0.2 pos)))
 
+(define-action start-up (movement)
+  (key-press (one-of key :w :up))
+  (gamepad-move (eql axis :left-v) (< pos -0.2 old-pos)))
+
+(define-action start-down (movement)
+  (key-press (one-of key :s :down))
+  (gamepad-move (eql axis :left-v) (< old-pos 0.2 pos)))
+
 (define-action end-left (movement)
   (key-release (one-of key :a :left))
   (gamepad-move (eql axis :left-h) (< old-pos -0.2 pos)))
@@ -27,6 +35,25 @@
 (define-action end-right (movement)
   (key-release (one-of key :d :right))
   (gamepad-move (eql axis :left-h) (< pos 0.2 old-pos)))
+
+(define-action end-up (movement)
+  (key-release (one-of key :w :up))
+  (gamepad-move (eql axis :left-v) (< old-pos -0.2 pos)))
+
+(define-action end-down (movement)
+  (key-release (one-of key :s :down))
+  (gamepad-move (eql axis :left-v) (< pos 0.2 old-pos)))
+
+(define-retention movement (ev)
+  (typecase ev
+    (start-left (setf (retained 'movement :left) T))
+    (start-right (setf (retained 'movement :right) T))
+    (start-up (setf (retained 'movement :up) T))
+    (start-down (setf (retained 'movement :down) T))
+    (end-left (setf (retained 'movement :left) NIL))
+    (end-right (setf (retained 'movement :right) NIL))
+    (end-up (setf (retained 'movement :up) NIL))
+    (end-down (setf (retained 'movement :down) NIL))))
 
 (define-shader-subject player (base-entity solid-entity)
   ((vacc :initarg :vacc :accessor vacc)
@@ -42,13 +69,6 @@
    :vacc (vec 0.2 -15 0)
    :vdcc (vec 0.4 0.5 0)
    :vlim (vec 15 20 0)))
-
-(define-retention movement (ev)
-  (typecase ev
-    (start-left (setf (retained 'movement :left) T))
-    (start-right (setf (retained 'movement :right) T))
-    (end-left (setf (retained 'movement :left) NIL))
-    (end-right (setf (retained 'movement :right) NIL))))
 
 (define-handler (player jump) (ev key)
   (when (and (< (jump-count player) (max-jump-count player))
