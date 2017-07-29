@@ -99,7 +99,9 @@
           ((< 0 (vx vel))
            (decf (vx vel) (vx (vdcc player))))
           (T
-           (incf (vx vel) (vx (vdcc player))))))
+           (incf (vx vel) (vx (vdcc player)))))
+
+    (setf (second (first (animations player))) (print (* 0.48 (/ (vx (vlim player)) (max 0.1 (abs (vx vel))))))))
   
   (incf (vy (vel player)) (vy (vdcc player)))
   (let ((nearest-hit NIL))
