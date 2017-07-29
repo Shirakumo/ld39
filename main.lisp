@@ -27,6 +27,11 @@
          (/ (width ev) (view-scale camera) 2)
          (/ (height ev) (view-scale camera) 3/2)))
 
+(defmethod (setf zoom) :after (zoom (camera sidescroll-camera*))
+  (vsetf (location camera)
+         (/ (width *context*) (* zoom (view-scale camera)) 2)
+         (/ (height *context*) (* zoom (view-scale camera)) 3/2)))
+
 (defmethod project-view ((camera sidescroll-camera*) ev)
   (let ((z (* (view-scale camera) (zoom camera))))
     (reset-matrix *view-matrix*)
