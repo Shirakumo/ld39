@@ -64,27 +64,23 @@
 
 (define-handler (editor mouse-press) (ev button)
   (when (active editor)
-    (case button
-      (:right
-       (case (mode editor)
-         (:place
-          (setf (mode editor) :edit))
-         (:edit
-          (setf (mode editor) :place
-                (selected editor) NIL)))
-       (v:info :editor "Changed mode to ~a" (mode editor)))
-      (:left
-       (case (mode editor)
-         (:place
-          (let ((pos (mouse-pos editor)))
-            (setf (selected editor) (load (make-instance (to-place editor) :location pos)))
-            (setf (start-pos editor) pos)
-            (enter (selected editor) *loop*)))
-         (:resize
-          (setf (selected editor) NIL)
-          (setf (mode editor) :place))
-         (:edit
-          (let ((pos (mouse-pos editor)))
+    (let ((pos (mouse-pos editor)))
+      (case button
+        (:right
+         (case (mode editor)
+           (:place
+            (leave (selected editor) *loop*)
+            (setf (mode editor) :edit))
+           (:edit
+            (setf (selected editor) NIL)
+            (setf (mode editor) :place)
+            (update-to-place editor pos)))
+         (v:info :editor "Changed mode to ~a" (mode editor)))
+        (:left
+         (case (mode editor)
+           (:place
+            (setf (start-pos editor) pos))
+           (:edit
             (for:for ((entity over *loop*))
               (when (and (typep entity 'sized-entity)
                          (not (eql entity (selected editor))))
@@ -96,20 +92,31 @@
                     (setf (selected editor) entity)
                     (return))))))))))))
 
+(defun update-to-place (editor pos)
+  (when (selected editor)
+    (leave (selected editor) *loop*))
+  (setf (selected editor) (load (make-instance (to-place editor) :location pos)))
+  (enter (selected editor) *loop*))
+
 (define-handler (editor mouse-release) (ev button)
   (when (active editor)
-    (case button
-      (:left
-       (case (mode editor)
-         (:place
-          (when (selected editor)
-            (let ((pos (mouse-pos editor)))
+    (let ((pos (mouse-pos editor)))
+      (case button
+        (:left
+         (case (mode editor)
+           (:place
+            (when (selected editor)
               (setf (location (selected editor)) pos)
               (setf (start-pos editor) pos)
               (cond ((eql (find-class 'ground) (to-place editor))
                      (setf (mode editor) :resize))
                     (T
-                     (setf (selected editor) NIL)))))))))))
+                     (setf (selected editor) NIL)))
+              (update-to-place editor pos)))
+           (:resize
+            (setf (selected editor) NIL)
+            (setf (mode editor) :place)
+            (update-to-place editor pos))))))))
 
 (define-handler (editor mouse-scroll) (ev delta)
   (when (active editor)
@@ -117,7 +124,8 @@
            (pos (or (position (to-place editor) classes) 0)))
       (setf pos (mod (+ pos (if (< 0 delta) 1 -1)) (length classes)))
       (setf (to-place editor) (nth pos classes))
-      (v:info :editor "Selecting ~a" (to-place editor)))))
+      (v:info :editor "Selecting ~a" (to-place editor))
+      (update-to-place editor (mouse-pos editor)))))
 
 (defun find-leaf-classes (base-class)
   (if (c2mop:class-direct-subclasses base-class)
