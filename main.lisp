@@ -11,11 +11,12 @@
   (:default-initargs :clear-color (vec 0.1 0.1 0.1 1)))
 
 (defmethod initialize-instance :after ((main main) &key)
-  (harmony-simple:start)
+  ;; (harmony-simple:start)
   (setf (harmony:min-distance (harmony-simple:segment :sfx)) 32))
 
 (defmethod finalize :after ((main main))
-  (harmony-simple:stop))
+  ;; (harmony-simple:stop)
+  )
 
 (define-subject sidescroll-camera* (sidescroll-camera)
   ((view-scale :initform 1.0 :accessor view-scale))
