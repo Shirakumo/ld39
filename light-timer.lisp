@@ -11,8 +11,10 @@
    (duration :initarg :duration :accessor duration))
   (:default-initargs
    :name :light-timer
-   :max-duration most-positive-fixnum
-   :duration most-positive-fixnum))
+   :max-duration (* 30 60)))
+
+(defmethod initialize-instance :after ((light-timer light-timer) &key max-duration duration)
+  (unless duration (setf (duration light-timer) max-duration)))
 
 (define-shader-subject light-switch (base-entity)
   ((switchedp :initform nil :accessor switchedp))

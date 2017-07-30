@@ -70,6 +70,12 @@
 (define-class-shader (light-scatter-pass* :fragment-shader)
   '(ld39 #p"light-scatter.frag"))
 
+(define-handler (light-scatter-pass* tick) (ev)
+  (let* ((light (unit :light-timer (scene (window :main))))
+         (x (if light (float (/ (duration light) (max-duration light))) 1.0))
+         (intensity (ease x 'cubic-out)))
+    (setf (uniforms light-scatter-pass*) `(("light" ,intensity)))))
+
 (progn
   (defmethod setup-pipeline ((main main))
     (let ((pipeline (pipeline main))
