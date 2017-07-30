@@ -16,10 +16,13 @@
 (defmethod initialize-instance :after ((light-timer light-timer) &key max-duration duration)
   (unless duration (setf (duration light-timer) max-duration)))
 
+(define-asset (ld39 battery) texture
+    (#p"battery.png"))
+
 (define-shader-subject light-switch (base-entity)
   ((switchedp :initform nil :accessor switchedp))
   (:default-initargs
-   :texture (asset 'ld39 'tire-1)
+   :texture (asset 'ld39 'battery)
    :size (vec 128 128)
    :vertex-array (asset 'ld39 '128x)))
 
