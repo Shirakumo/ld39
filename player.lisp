@@ -147,7 +147,9 @@
                    (/ (vx (vlim player)) (abs (vx vel))))
                 1000.0)))
 
-    #-windows (when (and (= (animation player) 0) (/= (vx (tile player)) (anim-tile player)))
+    #-windows (when (and (= (animation player) 0)
+                         (= 0 (vy (vel player)))
+                         (/= (vx (tile player)) (anim-tile player)))
                 (cond
                   ((= (vx (tile player)) 1)
                    (harmony-simple:play (getf (sounds player) :footstep-right) :sfx
