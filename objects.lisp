@@ -65,3 +65,32 @@
 (define-object decal-2 :size 256 :background T :layer 3)
 (define-object decal-l :size 256 :background T :layer 3)
 (define-object decal-r :size 256 :background T :layer 3)
+
+(define-asset (ld39 puddle) texture
+    (#p"puddle.png"))
+
+(define-asset (ld39 puddle-mesh) mesh
+    ((make-rectangle 512 32)))
+
+(define-shader-subject puddle (decoration) nil
+  (:default-initargs :texture (asset 'ld39 'puddle)
+                     :size (vec 512 32)
+                     :vertex-array (asset 'ld39 'puddle-mesh)
+                     :layer 6))
+
+(define-asset (ld39 splash) texture
+    (#p"splash.png"))
+
+(define-shader-subject splash (decoration background-entity axis-rotated-entity)
+  ((clock :initform 0 :accessor clock))
+  (:default-initargs
+   :texture (asset 'ld39 'splash)
+   :size (vec 64 64)
+   :vertex-array (asset 'ld39 '64x)
+   :layer 6
+   :axis +vy+))
+
+(define-handler (splash tick) (ev dt)
+  (incf (clock splash) dt)
+  (when (< 0.5 (clock splash))
+    (leave splash *loop*)))

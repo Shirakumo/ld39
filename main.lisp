@@ -15,7 +15,9 @@
         finally (array-utils:vector-push-extend-position unit (draw-order scene) pos)))
 
 (defmethod leave :after ((unit layered-unit) (scene scene*))
-  (array-utils:vector-pop-position (draw-order scene) (position unit (draw-order scene))))
+  (let ((pos (position unit (draw-order scene))))
+    (when pos
+      (array-utils:vector-pop-position (draw-order scene) pos))))
 
 (defmethod paint ((scene scene) target)
   (for:for ((unit across (draw-order scene)))

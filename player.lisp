@@ -180,13 +180,25 @@
           while nearest-hit
           do (hit (hit-a nearest-hit) (hit-b nearest-hit) nearest-hit)))
 
-  (for:for ((timer = (unit :light-timer *loop*))
-            (entity over *loop*))
-    (while timer)
-    (when (and (typep entity 'light-switch)
-               (test-collision player entity))
-      (setf (duration timer) (max-duration timer))
-      (leave entity *loop*)))
+  (let ((timer (unit :light-timer *loop*)))
+    (when timer
+      (for:for ((entity over *loop*))
+        (typecase entity
+          (light-switch
+           (when (test-point-vs-aabb (location player) (location entity) (size entity))
+             (setf (duration timer) (max-duration timer))
+             (leave entity *loop*)))
+          (puddle
+           (when (and (= (animation player) 0)
+                      (= 0 (vy (vel player)))
+                      (/= (vx (tile player)) (anim-tile player))
+                      (find (vx (tile player)) '(1 7) :test #'=))
+             (let ((loc (nv+ (vec 0 64 0) (location player))))
+               (when (test-point-vs-aabb loc (location entity) (v/ (size entity) 2))
+                 (let ((splash (load (make-instance 'splash :location loc :angle (angle player)))))
+                   (decf (vy loc) (/ (vy (size splash)) 2))
+                   (enter splash *loop*))))
+             (setf (anim-tile player) (vx (tile player)))))))))
 
   (nvclamp (v- (vlim player)) (vel player) (vlim player))
   (when (plusp (vy (vel player)))

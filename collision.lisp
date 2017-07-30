@@ -65,6 +65,10 @@
                                    (project-vector (v- seg-vel vel) (vec 1 0)))
                           :pos (v+ seg-pos vel))))))))))
 
+(defun test-point-vs-aabb (a-pos b-pos b-size)
+  (and (<= (- (vx b-pos) (vx b-size)) (vx a-pos) (+ (vx b-pos) (vx b-size)))
+       (<= (- (vy b-pos) (vy b-size)) (vy a-pos) (+ (vy b-pos) (vy b-size)))))
+
 (defun test-aabb-vs-aabb (a-pos a-size b-pos b-size)
   (let* ((d (v- b-pos a-pos))
          (p (v- (v+ a-size b-size) (vabs d)))
