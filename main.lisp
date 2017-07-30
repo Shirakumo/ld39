@@ -10,14 +10,6 @@
   ((map-file :initarg :map-file :initform NIL :accessor map-file))
   (:default-initargs :clear-color (vec 0.1 0.1 0.1 0)))
 
-(defmethod initialize-instance :after ((main main) &key)
-  ;; (harmony-simple:start)
-  (setf (harmony:min-distance (harmony-simple:segment :sfx)) 32))
-
-(defmethod finalize :after ((main main))
-  ;; (harmony-simple:stop)
-  )
-
 (define-subject sidescroll-camera* (sidescroll-camera)
   ((view-scale :initform 1.0 :accessor view-scale))
   (:default-initargs :name :camera))
@@ -89,6 +81,4 @@
   (maybe-reload-scene))
 
 (defun launch ()
-  (unless (harmony::thread harmony-simple:*server*)
-    (harmony-simple:start))
   (trial:launch 'main))

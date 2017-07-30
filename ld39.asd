@@ -14,8 +14,7 @@
                (:file "player")
                (:file "editor")
                (:file "main"))
-  :depends-on (:trial
-               :harmony-simple)
+  :depends-on (:trial)
   :defsystem-depends-on (:deploy)
   :build-operation "deploy-op"
   :build-pathname "ld39"

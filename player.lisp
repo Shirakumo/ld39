@@ -147,19 +147,20 @@
                    (/ (vx (vlim player)) (abs (vx vel))))
                 1000.0)))
 
-    #-windows (when (and (= (animation player) 0)
-                         (= 0 (vy (vel player)))
-                         (/= (vx (tile player)) (anim-tile player)))
-                (cond
-                  ((= (vx (tile player)) 1)
-                   (harmony-simple:play (getf (sounds player) :footstep-right) :sfx
-                                        :type 'harmony-mp3:mp3-buffer-source
-                                        :loop NIL))
-                  ((= (vx (tile player)) 7)
-                   (harmony-simple:play (getf (sounds player) :footstep-left) :sfx
-                                        :type 'harmony-mp3:mp3-buffer-source
-                                        :loop NIL)))
-                (setf (anim-tile player) (vx (tile player))))
+    #+harmony-is-actually-working-now
+    (when (and (= (animation player) 0)
+               (= 0 (vy (vel player)))
+               (/= (vx (tile player)) (anim-tile player)))
+      (cond
+        ((= (vx (tile player)) 1)
+         (harmony-simple:play (getf (sounds player) :footstep-right) :sfx
+                              :type 'harmony-mp3:mp3-buffer-source
+                              :loop NIL))
+        ((= (vx (tile player)) 7)
+         (harmony-simple:play (getf (sounds player) :footstep-left) :sfx
+                              :type 'harmony-mp3:mp3-buffer-source
+                              :loop NIL)))
+      (setf (anim-tile player) (vx (tile player))))
     
     (incf (vy (vel player)) (vy vdcc)))
 
