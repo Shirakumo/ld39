@@ -25,8 +25,11 @@
 
 (defclass main (trial:main)
   ((scene :initform (make-instance 'scene*) :accessor scene)
+   (map-files :initarg :map-files :initform () :accessor map-files)
    (map-file :initarg :map-file :initform NIL :accessor map-file))
-  (:default-initargs :clear-color (vec 0.1 0.1 0.1 0)))
+  (:default-initargs
+   :clear-color (vec 0.1 0.1 0.1 0)
+   :map-files '("map0" "map1" "map2" "map3")))
 
 (define-subject sidescroll-camera* (sidescroll-camera)
   ((view-scale :initform 1.0 :accessor view-scale))
@@ -115,7 +118,8 @@ void main(){
          (maybe-reload-scene)))
     (:game-over
      (let ((scene (scene (window :main))))
-       (enter (load (make-instance 'game-over-screen)) scene))
+       (enter (load (make-instance 'game-over-screen)) scene)
+       (leave (unit :light-timer scene) scene))
      (setf (action fader) NIL)))
   (setf (uniforms fader) `(("opacity" ,(fade fader)))))
 
@@ -124,10 +128,13 @@ void main(){
   (setf (action fader) :level-begin))
 
 (define-handler (fader level-complete) (ev)
+  (let ((main (window :main)))
+    (setf (map-file main) (elt (map-files main) (1+ (or (position (map-file main) (map-files main)) -1)))))
   (setf (action fader) :level-complete))
 
 (define-handler (fader game-over) (ev)
-  (setf (action fader) :game-over))
+  (when (action fader)
+    (setf (action fader) :game-over)))
 
 (define-action retry ()
   (key-release (one-of key :r))

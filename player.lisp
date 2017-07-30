@@ -198,6 +198,11 @@
                (decf (vy loc) (/ (vy (size splash)) 2))
                (enter splash *loop*))
              (setf (anim-tile player) (vx (tile player)))))))
+      (nuclear-goop
+       (when (test-point-vs-aabb (location player) (location entity)
+                                 (v/ (size entity) 2))
+         (issue *loop* 'game-over)
+         (setf (vel player) (vec 0 0 0))))
       (exit
        (let ((camera (unit :camera *loop*))
              (collidesp (test-point-vs-aabb (location player)
@@ -255,8 +260,3 @@
          (vx (hit-vel hit))
          (vy (hit-vel hit))
          0))
-
-(defmethod hit ((player player) (entity nuclear-goop) hit)
-  (issue *loop* 'game-over)
-  (setf (vel player) (vec 0 0 0))
-  (setf (vacc player) (vec 0 0 0)))
