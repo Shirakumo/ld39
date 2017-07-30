@@ -74,6 +74,7 @@
    :texture (asset 'ld39 'player)
    :vertex-array (asset 'ld39 '128x)
    :animations '((0.75 12)
+                 (1 1)
                  (1 1))
    :max-jump-count 2
    :vacc (vec 0.2 -15 0)
@@ -166,6 +167,15 @@
                      (setf nearest-hit hit)))))
           while nearest-hit
           do (hit (hit-a nearest-hit) (hit-b nearest-hit) nearest-hit)))
+
+  (for:for ((entity over *loop*))
+    (when (and (typep entity 'light-switch)
+               (not (switchedp entity))
+               (test-collision player entity))
+      (let ((timer (unit :light-timer *loop*)))
+        (setf (duration timer) (max-duration timer)
+              (switchedp entity) t))))
+
   (nvclamp (v- (vlim player)) (vel player) (vlim player))
   (when (plusp (vy (vel player)))
     (setf (jump-count player) (max 1 (jump-count player)))

@@ -53,7 +53,9 @@
              (enter (make-instance 'player) scene)
              (enter (make-instance 'editor) scene)
              (enter (make-instance 'sidescroll-camera* :target (unit :player scene))
-                    scene)))))
+                    scene)
+             (enter (make-instance 'light-timer) scene)
+             (enter (make-instance 'light-switch :location (vec -500 -300 0)) scene)))))
   (maybe-reload-scene))
 
 (define-shader-pass black-render-pass* (black-render-pass)
