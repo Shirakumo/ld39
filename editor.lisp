@@ -10,10 +10,10 @@
   (key-press (one-of key :delete :backspace)))
 
 (define-action save-map ()
-  (key-press (one-of key :f12)))
+  (key-press (one-of key :f12 :l2)))
 
 (define-action load-map ()
-  (key-press (one-of key :f11)))
+  (key-press (one-of key :f11 :l1)))
 
 (define-subject editor (located-entity)
   ((active :initarg :active :accessor active)
