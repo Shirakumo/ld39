@@ -212,3 +212,6 @@
          (vx (hit-vel hit))
          (vy (hit-vel hit))
          0))
+
+(defmethod hit ((player player) (entity hazardous-ground) hit)
+  (maybe-reload-scene))

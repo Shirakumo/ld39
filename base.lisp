@@ -75,3 +75,10 @@
   ()
   (:default-initargs
    :color (vec 0 0 0 1)))
+
+(define-shader-subject hazardous-ground (resizable-subject
+                                         colored-subject
+                                         solid-entity)
+  ()
+  (:default-initargs
+   :color (vec 0 1 0 1)))
