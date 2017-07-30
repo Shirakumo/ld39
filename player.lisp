@@ -175,8 +175,9 @@
                (not (switchedp entity))
                (test-collision player entity))
       (let ((timer (unit :light-timer *loop*)))
-        (setf (duration timer) (max-duration timer)
-              (switchedp entity) t))))
+        (when timer
+          (setf (duration timer) (max-duration timer)
+                (switchedp entity) t)))))
 
   (nvclamp (v- (vlim player)) (vel player) (vlim player))
   (when (plusp (vy (vel player)))
