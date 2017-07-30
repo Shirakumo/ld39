@@ -100,7 +100,9 @@
     ((and (< (jump-count player) (max-jump-count player))
           (>= (vy (vel player)) 0.0))
      (setf (vy (vel player)) (vy (vacc player)))
-     (incf (jump-count player)))))
+     (incf (jump-count player))))
+  (when (and (= 1 (animation player)) (v/= 0 (vel player)))
+    (setf (animation player) 0)))
 
 (defgeneric hit (a b hit))
 
@@ -129,7 +131,7 @@
           (T
            (incf (vx vel) (vx vdcc))))
 
-    (cond ((= 0 (vx vel))
+    (cond ((and (v= 0 vel) (= 0 (jump-count player)))
            (setf (animation player) 1))
           (T
            (setf (animation player) 0)
