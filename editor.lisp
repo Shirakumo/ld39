@@ -43,11 +43,13 @@
 
 (define-handler (editor toggle-overlay) (ev)
   (setf (active editor) (not (active editor)))
+  (setup-pipeline (window :main))
   (cond ((active editor)
          (setf (mode editor) :edit)
          (setf (target (unit :camera *loop*)) editor)
          (setf (location editor) (vcopy (location (unit :player *loop*))))
          (remove-handler (unit :player *loop*) *loop*)
+         (setf (clear-color (window :main)) (vec 0.3 0.3 0.3 0))
          (v:info :editor "Activating editor mode."))
         (T
          (when (and (selected editor) (find (mode editor) '(:place :size)))
@@ -56,6 +58,7 @@
          (setf (target (unit :camera *loop*)) (unit :player *loop*))
          (setf (zoom (unit :camera *loop*)) 1.0)
          (add-handler (unit :player *loop*) *loop*)
+         (setf (clear-color (window :main)) (vec 0.1 0.1 0.1 0))
          (v:info :editor "Deactivating editor mode."))))
 
 (define-handler (editor tick) (ev)

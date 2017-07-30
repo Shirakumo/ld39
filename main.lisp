@@ -83,8 +83,9 @@
           (pass2 (make-instance 'black-render-pass*))
           (pass3 (make-instance 'light-scatter-pass*)))
       (register pass1 pipeline)
-      (connect (port pass1 'color) (port pass3 'previous-pass) pipeline)
-      (connect (port pass2 'color) (port pass3 'black-render-pass) pipeline)))
+      (unless (active (unit :editor (scene main)))
+        (connect (port pass1 'color) (port pass3 'previous-pass) pipeline)
+        (connect (port pass2 'color) (port pass3 'black-render-pass) pipeline))))
   (maybe-reload-scene))
 
 (defun launch ()
