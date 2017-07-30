@@ -108,7 +108,7 @@
                      0.48)
                  (/ (vx (vlim player)) (abs (vx vel))))
               1000.0)))
-  
+
   (incf (vy (vel player)) (vy (vdcc player)))
   (let ((nearest-hit NIL))
     (loop repeat 2
@@ -123,6 +123,8 @@
           while nearest-hit
           do (hit (hit-a nearest-hit) (hit-b nearest-hit) nearest-hit)))
   (nvclamp (v- (vlim player)) (vel player) (vlim player))
+  (when (plusp (vy (vel player)))
+    (setf (jump-count player) (max 1 (jump-count player))))
   (nv+ (location player) (vel player)))
 
 (defmethod hit ((player player) (entity sized-entity) hit)
