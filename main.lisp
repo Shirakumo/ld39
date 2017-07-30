@@ -80,4 +80,6 @@
   (maybe-reload-scene))
 
 (defun launch ()
+  (unless (harmony::thread harmony-simple:*server*)
+    (harmony-simple:start))
   (trial:launch 'main))

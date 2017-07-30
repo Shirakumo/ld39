@@ -66,7 +66,9 @@
    (jump-count :initform 0 :accessor jump-count)
    (max-jump-count :initarg :max-jump-count :accessor max-jump-count)
    (against-wall :initform nil :accessor against-wall)
-   (wall-jumping-p :initform nil :accessor wall-jumping-p))
+   (wall-jumping-p :initform nil :accessor wall-jumping-p)
+   (animation-tile :initform 0 :accessor anim-tile)
+   (sounds :initarg :sounds :accessor sounds))
   (:default-initargs
    :name :player
    :texture (asset 'ld39 'player)
@@ -77,7 +79,9 @@
    :vacc (vec 0.2 -15 0)
    :vdcc-ground (vec 0.4 0.5 0)
    :vdcc-air (vec 0.2 0.5 0)
-   :vlim (vec 15 30 0)))
+   :vlim (vec 15 30 0)
+   :sounds (list :footstep-left (pool-path 'ld39 #P"footstep-left.mp3")
+                 :footstep-right (pool-path 'ld39 #P"footstep-right.mp3"))))
 
 (define-handler (player jump) (ev key)
   (cond
@@ -136,6 +140,18 @@
                         (/ (vx (vlim player)) (abs (vx vel))))
                      1000.0))))
 
+    #-windows (when (and (= (animation player) 0) (/= (vx (tile player)) (anim-tile player)))
+                (cond
+                  ((= (vx (tile player)) 1)
+                   (harmony-simple:play (getf (sounds player) :footstep-right) :sfx
+                                        :type 'harmony-mp3:mp3-buffer-source
+                                        :loop NIL))
+                  ((= (vx (tile player)) 7)
+                   (harmony-simple:play (getf (sounds player) :footstep-left) :sfx
+                                        :type 'harmony-mp3:mp3-buffer-source
+                                        :loop NIL)))
+                (setf (anim-tile player) (vx (tile player))))
+    
     (incf (vy (vel player)) (vy vdcc)))
 
   (let ((nearest-hit NIL))
