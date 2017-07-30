@@ -42,6 +42,7 @@
 (define-object pipe-1 :size 256 :background T)
 (define-object pipe-2 :size 256 :background T)
 (define-object pipe-3 :size 256 :background T)
+(define-object pipe-4 :size 256 :background T)
 (define-object tire-0)
 (define-object tire-1)
 (define-object debris-0 :background T)
