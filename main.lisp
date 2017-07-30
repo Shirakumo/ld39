@@ -89,7 +89,7 @@
 
 (define-shader-pass fader (simple-post-effect-pass)
   ((fade :initform 1.0 :accessor fade)
-   (fade-to :initform 1.0 :accessor fade-to)))
+   (action :initform :level-begin :accessor action)))
 
 (define-class-shader (fader :fragment-shader)
   "uniform float opacity = 1.0;
@@ -105,19 +105,36 @@ void main(){
 }")
 
 (define-handler (fader tick) (ev)
-  (if (= 1.0 (fade-to fader))
-      (when (< (fade fader) 1.0)
-        (incf (fade fader) 0.005))
-      (when (< 0.0 (fade fader))
-        (decf (fade fader) 0.005)))
+  (case (action fader)
+    (:level-begin
+     (if (< (fade fader) 1.0)
+         (incf (fade fader) 0.005)))
+    (:level-complete
+     (if (< 0.0 (fade fader))
+         (decf (fade fader) 0.005)
+         (maybe-reload-scene)))
+    (:game-over
+     (let ((scene (scene (window :main))))
+       (enter (load (make-instance 'game-over-screen)) scene))
+     (setf (action fader) NIL)))
   (setf (uniforms fader) `(("opacity" ,(fade fader)))))
 
 (define-handler (fader level-begin) (ev)
   (setf (fade fader) 0.0)
-  (setf (fade-to fader) 1.0))
+  (setf (action fader) :level-begin))
 
 (define-handler (fader level-complete) (ev)
-  (setf (fade-to fader) 0.0))
+  (setf (action fader) :level-complete))
+
+(define-handler (fader game-over) (ev)
+  (setf (action fader) :game-over))
+
+(define-action retry ()
+  (key-release (one-of key :r))
+  (gamepad-release (one-of button :start)))
+
+(define-handler (fader retry) (ev)
+  (maybe-reload-scene))
 
 (progn
   (defmethod setup-pipeline ((main main))

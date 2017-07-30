@@ -222,7 +222,8 @@
        (when (test-point-vs-aabb (location player)
                                  (location entity)
                                  (v/ (size entity) 2))
-         (maybe-reload-scene)))))
+         (issue *loop* 'level-complete)
+         (deregister player *loop*)))))
   (when (or (= 0 (vx (vel player)))
             (/= 0 (vy (vel player))))
     (setf (anim-tile player) -1))
@@ -256,4 +257,6 @@
          0))
 
 (defmethod hit ((player player) (entity nuclear-goop) hit)
-  (maybe-reload-scene))
+  (issue *loop* 'game-over)
+  (setf (vel player) (vec 0 0 0))
+  (setf (vacc player) (vec 0 0 0)))

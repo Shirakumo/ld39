@@ -35,6 +35,9 @@
     ())
 
   (defclass background-entity (entity)
+    ())
+
+  (defclass unplacable (entity)
     ()))
 
 (defmethod solidp ((entity solid-entity))
@@ -82,10 +85,10 @@
                                      solid-entity)
   ()
   (:default-initargs
-   :color (vec 29/255 232/255 31/255 1)
+   :color (vec 29/255 232/255 31/255 0.8)
    :size (vec 64 64)
    :vertex-array (asset 'ld39 '64x)
-   :layer 2))
+   :layer 6))
 
 (define-shader-subject camera-target (sized-entity colored-subject)
   ()
