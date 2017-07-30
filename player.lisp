@@ -197,7 +197,30 @@
              (let ((splash (load (make-instance 'splash :location loc :angle (angle player)))))
                (decf (vy loc) (/ (vy (size splash)) 2))
                (enter splash *loop*))
-             (setf (anim-tile player) (vx (tile player)))))))))
+             (setf (anim-tile player) (vx (tile player)))))))
+      (exit
+       (let ((camera (unit :camera *loop*))
+             (collidesp (test-point-vs-aabb (location player)
+                                            (location entity)
+                                            (nv+ (nv+ (vec (ceiling (width *context*) 2)
+                                                           (ceiling (height *context*) 2))
+                                                      (size entity))
+                                                 20))))
+         (cond
+           ((and collidesp (not (camera-target entity)))
+            (setf (camera-target entity) (enter (make-instance
+                                                 'camera-target
+                                                 :location (vcopy (location player)))
+                                                *loop*)
+                  (target camera) (camera-target entity)))
+           ((and (not collidesp) (camera-target entity))
+            (leave (camera-target entity) *loop*)
+            (setf (camera-target entity) nil
+                  (target camera) player))))
+       (when (test-point-vs-aabb (location player)
+                                 (location entity)
+                                 (size entity))
+         (maybe-reload-scene)))))
   (when (or (= 0 (vx (vel player)))
             (/= 0 (vy (vel player))))
     (setf (anim-tile player) -1))
