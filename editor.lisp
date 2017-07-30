@@ -216,6 +216,7 @@
                    (read-sequence data stream)
                    (read-from-string data)))))
     (clear scene)
+    (enter (make-instance 'light-timer) scene)
     (let ((player))
       (for:for (((class name loc-x loc-y loc-z size-x size-y) in units))
         (let ((unit (make-instance class
