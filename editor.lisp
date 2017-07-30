@@ -99,10 +99,8 @@
       (setf (mouse-pos editor) pos)
       (when selected
         (case (mode editor)
-          (:place
-           (if (typep selected 'resizable-subject)
-               (setf (location selected) (nv+ (nv/ (vxy_ (size selected)) 2) pos))
-               (setf (location selected) pos)))
+          ((:drag :place)
+           (setf (location selected) (transform-pos selected pos)))
           (:resize
            (setf (size selected) (vmax 32 (nvabs (vxy (v* (v- pos (location selected)) 2)))))
            (load (offload selected)))
@@ -110,10 +108,14 @@
            (setf (location selected) (v/ (v+ pos (start-pos editor)) 2))
            (setf (size selected) (vmax 32 (nvabs (vxy (v- pos (start-pos editor))))))
            (load (offload selected)))
-          (:drag
-           (setf (location selected) pos))
           (T (when (and (drag-from editor) (< 32 (vlength (v- pos (drag-from editor)))))
                (setf (mode editor) :drag))))))))
+
+(defun transform-pos (selected pos)
+  (let ((vec (nv/ (vxy_ (size selected)) 2)))
+    (incf (vx vec) (vx pos))
+    (setf (vy vec) (- (vy pos) (vy vec)))
+    vec))
 
 (define-handler (editor mouse-press) (ev button)
   (when (active editor)
@@ -154,12 +156,14 @@
               (setf (drag-from editor) pos)))))))))
 
 (defun update-to-place (editor pos)
-  (when (selected editor)
-    (leave (selected editor) *loop*))
-  (setf (selected editor) (load (if (layer editor)
-                                    (make-instance (to-place editor) :location pos :layer (layer editor))
-                                    (make-instance (to-place editor) :location pos))))
-  (enter (selected editor) *loop*))
+  (with-accessors ((selected selected)) editor
+    (when selected
+      (leave selected *loop*))
+    (setf selected (load (if (layer editor)
+                             (make-instance (to-place editor) :layer (layer editor))
+                             (make-instance (to-place editor)))))
+    (setf (location selected) (transform-pos selected pos))
+    (enter selected *loop*)))
 
 (define-handler (editor mouse-release) (ev button)
   (when (active editor)
@@ -172,7 +176,6 @@
            (:drag (setf (mode editor) :edit))
            (:place
             (when (selected editor)
-              (setf (location (selected editor)) pos)
               (setf (start-pos editor) pos)
               (cond ((c2mop:subclassp (to-place editor) (find-class 'resizable-subject))
                      (setf (mode editor) :size))
