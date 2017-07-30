@@ -50,3 +50,5 @@
 (define-object debris-7 :background T)
 (define-object debris-8 :background T)
 (define-object debris-9 :background T)
+(define-object corner-l :size 32 :background T)
+(define-object corner-r :size 32 :background T)
