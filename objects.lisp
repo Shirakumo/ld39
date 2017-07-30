@@ -70,10 +70,9 @@
 (define-asset (ld39 game-over-screen) texture
     (#p"gameover.png"))
 
-(define-shader-subject game-over-screen (decoration background-entity unplacable)
+(define-shader-subject game-over-screen (vertex-subject textured-subject layered-unit unplacable)
   ()
   (:default-initargs :texture (asset 'ld39 'game-over-screen)
-                     :size (vec 512 512)
                      :vertex-array (asset 'ld39 '512x)
                      :layer 20))
 

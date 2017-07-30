@@ -90,7 +90,7 @@
    :vertex-array (asset 'ld39 '64x)
    :layer 6))
 
-(define-shader-subject camera-target (sized-entity colored-subject)
+(define-shader-subject camera-target (sized-entity colored-subject unplacable)
   ()
   (:default-initargs
    :color (vec 1 0 0 0.1)
