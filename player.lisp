@@ -72,6 +72,7 @@
    :texture (asset 'ld39 'player)
    :vertex-array (asset 'ld39 '128x)
    :animations '((0.75 12)
+                 (1 1)
                  (1 1))
    :max-jump-count 2
    :vacc (vec 0.2 -15 0)
