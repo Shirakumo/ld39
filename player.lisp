@@ -78,7 +78,7 @@
                  (1 1))
    :max-jump-count 2
    :vacc (vec 0.2 -15 0)
-   :vdcc-ground (vec 0.4 0.5 0)
+   :vdcc-ground (vec 0.4 0.25 0)
    :vdcc-air (vec 0.2 0.5 0)
    :vlim (vec 15 30 0)
    :sounds (list :footstep-left (pool-path 'ld39 #P"footstep-left.mp3")
@@ -160,9 +160,11 @@
          (harmony-simple:play (getf (sounds player) :footstep-left) :sfx
                               :type 'harmony-mp3:mp3-buffer-source
                               :loop NIL)))
-      (setf (anim-tile player) (vx (tile player))))
-    
-    (incf (vy (vel player)) (vy vdcc)))
+      (setf (anim-tile player) (vx (tile player)))))
+
+  (incf (vy (vel player)) (if (against-wall player)
+                              (vy (vdcc-ground player))
+                              (vy (vdcc-air player))))
 
   (let ((nearest-hit NIL))
     (loop repeat 2
