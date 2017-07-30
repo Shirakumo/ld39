@@ -194,29 +194,39 @@
   (v* (vapplyf vec round size size size size) size))
 
 (defun save-map (map &optional (scene *loop*))
-  (let ((data (for:for ((unit in (sized-units scene))
-                        (data collecting (list (class-name (class-of unit))
-                                               (name unit)
-                                               (vx (location unit))
-                                               (vy (location unit))
-                                               (vz (location unit))
-                                               (vx (size unit))
-                                               (vy (size unit)))))
-                (returning data)))
+  (let ((unit-data (for:for ((unit in (sized-units scene))
+                             (data collecting (list (class-name (class-of unit))
+                                                    (name unit)
+                                                    (vx (location unit))
+                                                    (vy (location unit))
+                                                    (vz (location unit))
+                                                    (vx (size unit))
+                                                    (vy (size unit)))))
+                     (returning data)))
+        (timer-data (for:for ((unit over scene))
+                      (when (typep unit 'light-timer)
+                        (return (list (class-name (class-of unit))
+                                      (name unit)
+                                      (max-duration unit)
+                                      (duration unit))))))
         (map-path (pool-path 'ld39 map)))
-    (when data
+    (when (or unit-data timer-data)
       (with-open-file (stream map-path :direction :output
-                                       :if-exists :overwrite
+                                       :if-exists :supersede
                                        :if-does-not-exist :create)
-        (format stream "~s" data)))))
+        (format stream "~S~%~S~%"
+                unit-data
+                timer-data)))))
 
 (defun load-map (map &optional (scene *loop*))
-  (let ((units (with-open-file (stream (pool-path 'ld39 map))
-                 (let ((data (make-string (file-length stream))))
-                   (read-sequence data stream)
-                   (read-from-string data)))))
+  (let (units timer)
+    (with-open-file (stream (pool-path 'ld39 map))
+      (let ((data (make-string (file-length stream)))
+            (pos 0))
+        (read-sequence data stream)
+        (setf (values units pos) (read-from-string data t nil :start pos)
+              (values timer pos) (read-from-string data nil nil :start pos))))
     (clear scene)
-    (enter (make-instance 'light-timer) scene)
     (let ((player))
       (for:for (((class name loc-x loc-y loc-z size-x size-y) in units))
         (let ((unit (make-instance class
@@ -226,6 +236,14 @@
           (if (eql name :player)
               (setf player unit)
               (enter unit scene))))
+      (when timer
+        (destructuring-bind (class name max-duration duration)
+            timer
+          (enter (make-instance class
+                                :name name
+                                :max-duration max-duration
+                                :duration duration)
+                 scene)))
       (enter player scene))
     (enter (make-instance 'editor) scene)
     (enter (make-instance 'sidescroll-camera* :target (unit :player scene))
