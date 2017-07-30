@@ -71,6 +71,7 @@
    (sounds :initarg :sounds :accessor sounds))
   (:default-initargs
    :name :player
+   :layer 5
    :texture (asset 'ld39 'player)
    :vertex-array (asset 'ld39 '128x)
    :animations '((0.75 12)

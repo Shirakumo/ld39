@@ -6,8 +6,24 @@
 
 (in-package #:org.shirakumo.fraf.ld39)
 
+(defclass scene* (scene)
+  ((draw-order :initform (make-array 0 :adjustable T :fill-pointer T) :accessor draw-order)))
+
+(defmethod enter :after ((unit layered-unit) (scene scene*))
+  (loop for pos from 0 below (length (draw-order scene))
+        until (< (layer unit) (layer (aref (draw-order scene) pos)))
+        finally (array-utils:vector-push-extend-position unit (draw-order scene) pos)))
+
+(defmethod leave :after ((unit layered-unit) (scene scene*))
+  (array-utils:vector-pop-position (draw-order scene) (position unit (draw-order scene))))
+
+(defmethod paint ((scene scene) target)
+  (for:for ((unit across (draw-order scene)))
+    (paint unit target)))
+
 (defclass main (trial:main)
-  ((map-file :initarg :map-file :initform NIL :accessor map-file))
+  ((scene :initform (make-instance 'scene*) :accessor scene)
+   (map-file :initarg :map-file :initform NIL :accessor map-file))
   (:default-initargs :clear-color (vec 0.1 0.1 0.1 0)))
 
 (define-subject sidescroll-camera* (sidescroll-camera)

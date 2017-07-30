@@ -17,6 +17,7 @@
 
 (define-subject editor (located-entity)
   ((active :initarg :active :accessor active)
+   (layer :initform NIL :accessor layer)
    (mode :initform :place :accessor mode)
    (vel :initform (vec 0 0 0) :accessor vel)
    (selected :initform NIL :accessor selected)
@@ -63,6 +64,22 @@
          (add-handler (unit :player *loop*) *loop*)
          (setf (clear-color (window :main)) (vec 0.1 0.1 0.1 0))
          (v:info :editor "Deactivating editor mode."))))
+
+(define-handler (editor key-release) (ev key)
+  (when (active editor)
+    (case key
+      (:0 (setf (layer editor) NIL))
+      (:1 (setf (layer editor) 1))
+      (:2 (setf (layer editor) 2))
+      (:3 (setf (layer editor) 3))
+      (:4 (setf (layer editor) 4))
+      (:5 (setf (layer editor) 5))
+      (:6 (setf (layer editor) 6))
+      (:7 (setf (layer editor) 7))
+      (:8 (setf (layer editor) 8))
+      (:9 (setf (layer editor) 9)))
+    (when (find key '(:0 :1 :2 :3 :4 :5 :6 :7 :8 :9))
+      (v:info :editor "Layer changed to ~a" (layer editor)))))
 
 (define-handler (editor tick) (ev)
   (when (active editor)
@@ -138,7 +155,9 @@
 (defun update-to-place (editor pos)
   (when (selected editor)
     (leave (selected editor) *loop*))
-  (setf (selected editor) (load (make-instance (to-place editor) :location pos)))
+  (setf (selected editor) (load (if (layer editor)
+                                    (make-instance (to-place editor) :location pos :layer (layer editor))
+                                    (make-instance (to-place editor) :location pos))))
   (enter (selected editor) *loop*))
 
 (define-handler (editor mouse-release) (ev button)

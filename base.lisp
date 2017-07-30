@@ -27,7 +27,7 @@
   (:method (entity) nil))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defclass sized-entity (located-entity)
+  (defclass sized-entity (located-entity layered-unit)
     ((size :initarg :size :accessor size))
     (:default-initargs :size (vec 128 128)))
 
@@ -74,7 +74,8 @@
                                solid-entity)
   ()
   (:default-initargs
-   :color (vec 0 0 0 1)))
+   :color (vec 0 0 0 1)
+   :layer 2))
 
 (define-shader-subject nuclear-goop (resizable-subject
                                      colored-subject
@@ -83,4 +84,5 @@
   (:default-initargs
    :color (vec 29/255 232/255 31/255 1)
    :size (vec 64 64)
-   :vertex-array (asset 'ld39 '64x)))
+   :vertex-array (asset 'ld39 '64x)
+   :layer 2))

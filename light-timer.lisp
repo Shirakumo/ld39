@@ -22,6 +22,7 @@
 (define-shader-subject light-switch (base-entity)
   ()
   (:default-initargs
+   :layer 4
    :texture (asset 'ld39 'battery)
    :size (vec 128 128)
    :vertex-array (asset 'ld39 '128x)))

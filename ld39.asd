@@ -14,7 +14,8 @@
                (:file "player")
                (:file "editor")
                (:file "main"))
-  :depends-on (:trial)
+  :depends-on (:trial
+               :array-utils)
   :defsystem-depends-on (:deploy)
   :build-operation "deploy-op"
   :build-pathname "ld39"
