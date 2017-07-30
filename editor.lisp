@@ -76,7 +76,9 @@
       (when selected
         (case (mode editor)
           (:place
-           (setf (location selected) pos))
+           (if (typep selected 'resizable-subject)
+               (setf (location selected) (nv+ (nv/ (vxy_ (size selected)) 2) pos))
+               (setf (location selected) pos)))
           (:resize
            (setf (location selected) (v/ (v+ pos (start-pos editor)) 2))
            (setf (size selected) (vmax 32 (nvabs (vxy (v- pos (start-pos editor))))))
@@ -138,7 +140,7 @@
             (when (selected editor)
               (setf (location (selected editor)) pos)
               (setf (start-pos editor) pos)
-              (cond ((eql (find-class 'ground) (to-place editor))
+              (cond ((c2mop:subclassp (to-place editor) (find-class 'resizable-subject))
                      (setf (mode editor) :resize))
                     (T
                      (setf (selected editor) NIL)))

@@ -20,6 +20,9 @@
 (define-asset (ld39 256x) mesh
     ((make-rectangle 256 256)))
 
+(define-asset (ld39 512x) mesh
+    ((make-rectangle 512 512)))
+
 (defgeneric solidp (entity)
   (:method (entity) nil))
 
@@ -53,18 +56,22 @@
   (:default-initargs
    :vertex-array (asset 'ld39 '128x)))
 
-(define-shader-subject ground (vertex-subject
+(define-shader-subject resizable-subject (vertex-subject
+                                          sized-entity)
+  ())
+
+(defmethod load :around ((subject resizable-subject))
+  (setf (vertex-array subject) (make-rectangle (vx (size subject)) (vy (size subject))))
+  (change-class (vertex-array subject) 'vertex-array :load T)
+  (call-next-method))
+
+(defmethod offload progn ((subject resizable-subject))
+  (offload (vertex-array subject))
+  (setf (vertex-array subject) NIL))
+
+(define-shader-subject ground (resizable-subject
                                colored-subject
                                solid-entity)
   ()
   (:default-initargs
    :color (vec 0 0 0 1)))
-
-(defmethod load :around ((ground ground))
-  (setf (vertex-array ground) (make-rectangle (vx (size ground)) (vy (size ground))))
-  (change-class (vertex-array ground) 'vertex-array :load T)
-  (call-next-method))
-
-(defmethod offload progn ((ground ground))
-  (offload (vertex-array ground))
-  (setf (vertex-array ground) NIL))
