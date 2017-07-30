@@ -204,15 +204,17 @@
          (issue *loop* 'game-over)
          (setf (vel player) (vec 0 0 0))))
       (exit
-       (let ((camera (unit :camera *loop*))
-             (collidesp (test-point-vs-aabb (location player)
-                                            (location entity)
-                                            (nv+ (vec (/ (width *context*) 2)
-                                                      (/ (height *context*) 2))
-                                                 (v+ (v/ (size entity) 2)
-                                                     ;; The size of the player
-                                                     ;; is fairly arbitrary
-                                                     (size player))))))
+       (let* ((camera (unit :camera *loop*))
+              (collidesp (test-point-vs-aabb (location player)
+                                             (location entity)
+                                             (nv+ (vec (/ 2048 2)
+                                                       (/ (* (height *context*)
+                                                             (view-scale camera))
+                                                          2))
+                                                  (v+ (v/ (size entity) 2)
+                                                      ;; The size of the player
+                                                      ;; is fairly arbitrary
+                                                      (size player))))))
          (cond
            ((and collidesp (not (camera-target entity)))
             (setf (camera-target entity) (enter (make-instance
