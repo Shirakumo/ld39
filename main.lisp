@@ -8,7 +8,7 @@
 
 (defclass main (trial:main)
   ((map-file :initarg :map-file :initform NIL :accessor map-file))
-  (:default-initargs :clear-color (vec 0.1 0.1 0.1 1)))
+  (:default-initargs :clear-color (vec 0.1 0.1 0.1 0)))
 
 (defmethod initialize-instance :after ((main main) &key)
   ;; (harmony-simple:start)
