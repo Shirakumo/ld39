@@ -110,7 +110,8 @@
            (:place
             (setf (start-pos editor) pos))
            (:edit
-            (cond ((and (or (retained 'key :left-shift) (retained 'key :right-shift))
+            (cond ((and (or (retained 'key :left-shift) (retained 'key :right-shift)
+                            (retained 'key :shift-l) (retained 'key :shift-r))
                         (typep (selected editor) 'resizable-subject))
                    (setf (mode editor) :resize))
                   (T
