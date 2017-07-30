@@ -33,8 +33,11 @@
     (setf (selected editor) NIL)))
 
 (define-handler (editor save-map) (ev)
-  (format *standard-output* "Save to > ")
-  (save-map (read-line *standard-input*)))
+  (let ((map-file (or (map-file (window :main))
+                       (format *standard-output* "Save to > ")
+                       (read-line *standard-input*))))
+    (save-map map-file)
+    (v:log :info :editor "Saved map ~a" map-file)))
 
 (define-handler (editor load-map) (ev)
   (format *standard-output* "Load from > ")
