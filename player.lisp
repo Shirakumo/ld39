@@ -56,7 +56,7 @@
     (end-down (setf (retained 'movement :down) NIL))))
 
 (define-asset (ld39 player) texture
-    (#p"walk.png"))
+    (#p"player.png"))
 
 (define-shader-subject player (animated-sprite-subject base-entity solid-entity)
   ((vacc :initarg :vacc :accessor vacc)
@@ -71,7 +71,8 @@
    :name :player
    :texture (asset 'ld39 'player)
    :vertex-array (asset 'ld39 '128x)
-   :animations '((0.75 12))
+   :animations '((0.75 12)
+                 (1 1))
    :max-jump-count 2
    :vacc (vec 0.2 -15 0)
    :vdcc-ground (vec 0.4 0.5 0)
@@ -123,13 +124,17 @@
           (T
            (incf (vx vel) (vx vdcc))))
 
-    (setf (second (first (animations player)))
-          (if (/= 0 (vx vel))
-              (* (if (< 0.1 (abs (vy vel)))
-                     (/ (vy (vlim player)) (abs (vy vel)) 2)
-                     0.48)
-                 (/ (vx (vlim player)) (abs (vx vel))))
-              1000.0))
+    (cond ((= 0 (vx vel))
+           (setf (animation player) 1))
+          (T
+           (setf (animation player) 0)
+           (setf (second (first (animations player)))
+                 (if (/= 0 (vx vel))
+                     (* (if (< 0.1 (abs (vy vel)))
+                            (/ (vy (vlim player)) (abs (vy vel)) 2)
+                            0.48)
+                        (/ (vx (vlim player)) (abs (vx vel))))
+                     1000.0))))
 
     (incf (vy (vel player)) (vy vdcc)))
 
