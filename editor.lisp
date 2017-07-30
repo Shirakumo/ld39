@@ -50,7 +50,7 @@
          (remove-handler (unit :player *loop*) *loop*)
          (v:info :editor "Activating editor mode."))
         (T
-         (when (and (selected editor) (find (mode editor) '(:place :resize)))
+         (when (and (selected editor) (find (mode editor) '(:place :size)))
            (leave (selected editor) *loop*))
          (setf (selected editor) NIL)
          (setf (target (unit :camera *loop*)) (unit :player *loop*))
@@ -80,6 +80,9 @@
                (setf (location selected) (nv+ (nv/ (vxy_ (size selected)) 2) pos))
                (setf (location selected) pos)))
           (:resize
+           (setf (size selected) (vmax 32 (nvabs (vxy (v* (v- pos (location selected)) 2)))))
+           (load (offload selected)))
+          (:size
            (setf (location selected) (v/ (v+ pos (start-pos editor)) 2))
            (setf (size selected) (vmax 32 (nvabs (vxy (v- pos (start-pos editor))))))
            (load (offload selected)))
@@ -107,17 +110,21 @@
            (:place
             (setf (start-pos editor) pos))
            (:edit
-            (for:for ((entity over *loop*))
-              (when (and (typep entity 'sized-entity)
-                         (not (eql entity (selected editor))))
-                (let ((s (nv/ (vxy_ (size entity)) 2)))
-                  (when (v<= (v- (location entity) s)
-                             pos
-                             (v+ (location entity) s))
-                    (v:log :info :editor "Selected ~a" entity)
-                    (setf (selected editor) entity
-                          (drag-from editor) pos)
-                    (return)))))
+            (cond ((and (or (retained 'key :left-shift) (retained 'key :right-shift))
+                        (typep (selected editor) 'resizable-subject))
+                   (setf (mode editor) :resize))
+                  (T
+                   (for:for ((entity over *loop*))
+                     (when (and (typep entity 'sized-entity)
+                                (not (eql entity (selected editor))))
+                       (let ((s (nv/ (vxy_ (size entity)) 2)))
+                         (when (v<= (v- (location entity) s)
+                                    pos
+                                    (v+ (location entity) s))
+                           (v:log :info :editor "Selected ~a" entity)
+                           (setf (selected editor) entity
+                                 (drag-from editor) pos)
+                           (return)))))))
             (when (selected editor)
               (setf (drag-from editor) pos)))))))))
 
@@ -141,18 +148,20 @@
               (setf (location (selected editor)) pos)
               (setf (start-pos editor) pos)
               (cond ((c2mop:subclassp (to-place editor) (find-class 'resizable-subject))
-                     (setf (mode editor) :resize))
+                     (setf (mode editor) :size))
                     (T
                      (setf (selected editor) NIL)))
               (update-to-place editor pos)))
            (:resize
+            (setf (mode editor) :edit))
+           (:size
             (setf (selected editor) NIL)
             (setf (mode editor) :place)
             (update-to-place editor pos))))))))
 
 (define-handler (editor mouse-scroll) (ev delta)
   (when (and (active editor))
-    (cond ((or (retained 'key :control) (retained 'key :left-control)
+    (cond ((or (retained 'key :control) (retained 'key :left-control) (retained 'key :right-control)
                (retained 'key :control-l) (retained 'key :control-r))
            (let ((camera (unit :camera *loop*)))
              (setf (zoom camera) (* (zoom camera) (if (< 0 delta) 1.5 (/ 1.5))))))
@@ -212,10 +221,9 @@
     (load scene)))
 
 (defun sized-units (scene)
-  (let ((superclass (class-name (find-class 'sized-entity)))
+  (let ((superclass (find-class 'sized-entity))
         (units))
-    (for:for ((unit in (units scene))
-              (class = (class-name (class-of unit))))
-      (when (subtypep class superclass)
+    (for:for ((unit in (units scene)))
+      (when (c2mop:subclassp (class-of unit) superclass)
         (push unit units)))
     units))
