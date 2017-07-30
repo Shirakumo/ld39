@@ -93,7 +93,8 @@
 
 (define-handler (editor mouse-move) (ev pos)
   (when (active editor)
-    (let ((pos (snap (screen->vec pos (width *context*) (height *context*)) 32))
+    (let ((pos (snap (screen->vec pos (width *context*) (height *context*))
+                     (if (eql :resize (mode editor)) 16 32)))
           (selected (selected editor)))
       (setf (mouse-pos editor) pos)
       (when selected
@@ -111,7 +112,7 @@
            (load (offload selected)))
           (:drag
            (setf (location selected) pos))
-          (T (when (and (drag-from editor) (< 16 (vlength (v- pos (drag-from editor)))))
+          (T (when (and (drag-from editor) (< 32 (vlength (v- pos (drag-from editor)))))
                (setf (mode editor) :drag))))))))
 
 (define-handler (editor mouse-press) (ev button)
