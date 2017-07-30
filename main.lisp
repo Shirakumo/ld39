@@ -129,7 +129,8 @@ void main(){
 
 (define-handler (fader level-complete) (ev)
   (let ((main (window :main)))
-    (setf (map-file main) (elt (map-files main) (1+ (or (position (map-file main) (map-files main)) -1)))))
+    (setf (map-file main) (elt (map-files main) (mod (1+ (or (position (map-file main) (map-files main)) -1))
+                                                     (length (map-files main))))))
   (setf (action fader) :level-complete))
 
 (define-handler (fader game-over) (ev)
