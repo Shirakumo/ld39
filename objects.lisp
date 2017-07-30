@@ -92,5 +92,17 @@
 
 (define-handler (splash tick) (ev dt)
   (incf (clock splash) dt)
-  (when (< 0.5 (clock splash))
+  (when (< 0.3 (clock splash))
     (leave splash *loop*)))
+
+(defmethod paint :before ((splash splash) (target shader-pass))
+  (let ((program (shader-program-for-pass target splash)))
+    (setf (uniform program "transparency") (coerce (/ (clock splash) 0.3s0) 'single-float))))
+
+(define-class-shader (splash :fragment-shader)
+  "uniform float transparency = 0.0;
+out vec4 color;
+
+void main(){
+   color.a *= 1.0-transparency;
+}")
