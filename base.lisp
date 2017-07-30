@@ -76,14 +76,11 @@
   (:default-initargs
    :color (vec 0 0 0 1)))
 
-(define-asset (ld39 nuclear-goop) texture
-    (#P"goop.png"))
-
 (define-shader-subject nuclear-goop (resizable-subject
-                                     textured-subject
+                                     colored-subject
                                      solid-entity)
   ()
   (:default-initargs
-   :texture (asset 'ld39 'nuclear-goop)
+   :color (vec 29/255 232/255 31/255 1)
    :size (vec 64 64)
    :vertex-array (asset 'ld39 '64x)))
