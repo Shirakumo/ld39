@@ -65,7 +65,8 @@
              (enter (make-instance 'sidescroll-camera* :target (unit :player scene))
                     scene)
              (enter (make-instance 'light-timer) scene)
-             (enter (make-instance 'light-switch :location (vec -500 -300 0)) scene)))))
+             (enter (make-instance 'light-switch :location (vec -500 -300 0)) scene)))
+      (issue scene 'level-begin)))
   (maybe-reload-scene))
 
 (define-shader-pass black-render-pass* (black-render-pass)
@@ -86,16 +87,69 @@
          (intensity (ease x 'cubic-out)))
     (setf (uniforms light-scatter-pass*) `(("light" ,intensity)))))
 
+(define-shader-pass fader (simple-post-effect-pass)
+  ((fade :initform 1.0 :accessor fade)
+   (action :initform :level-begin :accessor action)))
+
+(define-class-shader (fader :fragment-shader)
+  "uniform float opacity = 1.0;
+uniform sampler2D previous_pass;
+
+in vec2 tex_coord;
+out vec4 color;
+
+void main(){
+  color = texture(previous_pass, tex_coord);
+  color.rgb *= opacity;
+  color.a = 1;
+}")
+
+(define-handler (fader tick) (ev)
+  (case (action fader)
+    (:level-begin
+     (if (< (fade fader) 1.0)
+         (incf (fade fader) 0.005)))
+    (:level-complete
+     (if (< 0.0 (fade fader))
+         (decf (fade fader) 0.005)
+         (maybe-reload-scene)))
+    (:game-over
+     (let ((scene (scene (window :main))))
+       (enter (load (make-instance 'game-over-screen)) scene))
+     (setf (action fader) NIL)))
+  (setf (uniforms fader) `(("opacity" ,(fade fader)))))
+
+(define-handler (fader level-begin) (ev)
+  (setf (fade fader) 0.0)
+  (setf (action fader) :level-begin))
+
+(define-handler (fader level-complete) (ev)
+  (setf (action fader) :level-complete))
+
+(define-handler (fader game-over) (ev)
+  (setf (action fader) :game-over))
+
+(define-action retry ()
+  (key-release (one-of key :r))
+  (gamepad-release (one-of button :start)))
+
+(define-handler (fader retry) (ev)
+  (maybe-reload-scene))
+
 (progn
   (defmethod setup-pipeline ((main main))
     (let ((pipeline (pipeline main))
           (pass1 (make-instance 'render-pass))
           (pass2 (make-instance 'black-render-pass*))
-          (pass3 (make-instance 'light-scatter-pass*)))
+          (pass3 (make-instance 'light-scatter-pass*))
+          (pass4 (make-instance 'fader)))
       (register pass1 pipeline)
-      (unless (active (unit :editor (scene main)))
-        (connect (port pass1 'color) (port pass3 'previous-pass) pipeline)
-        (connect (port pass2 'color) (port pass3 'black-render-pass) pipeline))))
+      (cond ((active (unit :editor (scene main)))
+             (connect (port pass1 'color) (port pass4 'previous-pass) pipeline))
+            (T
+             (connect (port pass1 'color) (port pass3 'previous-pass) pipeline)
+             (connect (port pass2 'color) (port pass3 'black-render-pass) pipeline)
+             (connect (port pass3 'color) (port pass4 'previous-pass) pipeline)))))
   (maybe-reload-scene))
 
 (defun launch ()

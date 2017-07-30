@@ -66,13 +66,33 @@
 (define-object decal-l :size 256 :background T :layer 3)
 (define-object decal-r :size 256 :background T :layer 3)
 
+
+(define-asset (ld39 game-over-screen) texture
+    (#p"gameover.png"))
+
+(define-shader-subject game-over-screen (vertex-subject textured-subject layered-unit unplacable)
+  ()
+  (:default-initargs :texture (asset 'ld39 'game-over-screen)
+                     :vertex-array (asset 'ld39 '512x)
+                     :layer 20))
+
+(defmethod paint ((screen game-over-screen) target)
+  (with-pushed-matrix ((view-matrix :identity)
+                       (projection-matrix :identity)
+                       (model-matrix :identity))
+    (let ((w (width *context*)) (h (height *context*)))
+      (orthographic-projection 0 w h 0 -100 100)
+      (translate-by (/ w 2) (/ h 2) 100)
+      (call-next-method))))
+
 (define-asset (ld39 puddle) texture
     (#p"puddle.png"))
 
 (define-asset (ld39 puddle-mesh) mesh
     ((make-rectangle 512 32)))
 
-(define-shader-subject puddle (decoration) nil
+(define-shader-subject puddle (decoration)
+  ()
   (:default-initargs :texture (asset 'ld39 'puddle)
                      :size (vec 512 32)
                      :vertex-array (asset 'ld39 'puddle-mesh)
@@ -81,7 +101,7 @@
 (define-asset (ld39 splash) texture
     (#p"splash.png"))
 
-(define-shader-subject splash (decoration background-entity axis-rotated-entity)
+(define-shader-subject splash (decoration background-entity axis-rotated-entity unplacable)
   ((clock :initform 0 :accessor clock))
   (:default-initargs
    :texture (asset 'ld39 'splash)

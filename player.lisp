@@ -202,10 +202,12 @@
        (let ((camera (unit :camera *loop*))
              (collidesp (test-point-vs-aabb (location player)
                                             (location entity)
-                                            (nv+ (nv+ (vec (ceiling (width *context*) 2)
-                                                           (ceiling (height *context*) 2))
-                                                      (size entity))
-                                                 20))))
+                                            (nv+ (vec (/ (width *context*) 2)
+                                                      (/ (height *context*) 2))
+                                                 (v+ (v/ (size entity) 2)
+                                                     ;; The size of the player
+                                                     ;; is fairly arbitrary
+                                                     (size player))))))
          (cond
            ((and collidesp (not (camera-target entity)))
             (setf (camera-target entity) (enter (make-instance
@@ -219,8 +221,9 @@
                   (target camera) player))))
        (when (test-point-vs-aabb (location player)
                                  (location entity)
-                                 (size entity))
-         (maybe-reload-scene)))))
+                                 (v/ (size entity) 2))
+         (issue *loop* 'level-complete)
+         (deregister player *loop*)))))
   (when (or (= 0 (vx (vel player)))
             (/= 0 (vy (vel player))))
     (setf (anim-tile player) -1))
@@ -254,4 +257,6 @@
          0))
 
 (defmethod hit ((player player) (entity nuclear-goop) hit)
-  (maybe-reload-scene))
+  (issue *loop* 'game-over)
+  (setf (vel player) (vec 0 0 0))
+  (setf (vacc player) (vec 0 0 0)))
