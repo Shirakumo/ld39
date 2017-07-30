@@ -81,8 +81,7 @@
    :layer 2))
 
 (define-shader-subject nuclear-goop (resizable-subject
-                                     colored-subject
-                                     solid-entity)
+                                     colored-subject)
   ()
   (:default-initargs
    :color (vec 29/255 232/255 31/255 0.8)
