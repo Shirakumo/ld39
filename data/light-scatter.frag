@@ -15,7 +15,7 @@ void main(){
   vec2 size = textureSize(previous_pass, 0);
   float shadow_intensity = 0.0;
   vec2 delta_coord = vec2(tex_coord - origin);
-  float dist = length(delta_coord*size/500);
+  float dist = length(delta_coord*size/500/2048/size.x);
 
   vec2 _tex_coord = tex_coord;
   delta_coord *= (1.0 /  float(samples)) * density;
