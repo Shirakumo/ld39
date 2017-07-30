@@ -212,3 +212,6 @@
          (vx (hit-vel hit))
          (vy (hit-vel hit))
          0))
+
+(defmethod hit ((player player) (entity nuclear-goop) hit)
+  (maybe-reload-scene))
