@@ -24,8 +24,8 @@
   (:default-initargs
    :layer 4
    :texture (asset 'ld39 'battery)
-   :size (vec 128 128)
-   :vertex-array (asset 'ld39 '128x)))
+   :size (vec 64 64)
+   :vertex-array (asset 'ld39 '64x)))
 
 (define-handler (light-timer tick) (ev)
   (setf (duration light-timer) (max 0 (1- (duration light-timer)))))
