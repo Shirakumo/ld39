@@ -96,7 +96,8 @@
                             (:left PI)
                             (:right 0))
            (wall-jumping-p player) t
-           (against-wall player) nil))
+           (against-wall player) nil
+           (animation player) 0))
     ((and (< (jump-count player) (max-jump-count player))
           (>= (vy (vel player)) 0.0))
      (setf (vy (vel player)) (vy (vacc player)))
@@ -114,13 +115,15 @@
                    (vdcc-air player))))
     (cond ((and (retained 'movement :left)
                 (not (wall-jumping-p player)))
-           (setf (angle player) PI)
+           (setf (angle player) PI
+                 (animation player) 0)
            (decf (vx vel) (vx vacc))
            (when (< 0 (vx vel))
              (decf (vx vel) (vx vdcc))))
           ((and (retained 'movement :right)
                 (not (wall-jumping-p player)))
-           (setf (angle player) 0)
+           (setf (angle player) 0
+                 (animation player) 0)
            (incf (vx vel) (vx vacc))
            (when (< (vx vel) 0)
              (incf (vx vel) (vx vdcc))))
@@ -133,7 +136,7 @@
 
     (cond ((and (v= 0 vel) (= 0 (jump-count player)))
            (setf (animation player) 1))
-          (T
+          ((= 0 (vy vel))
            (setf (animation player) 0)
            (setf (second (first (animations player)))
                  (if (/= 0 (vx vel))
@@ -195,7 +198,8 @@
         ((not (zerop (vx (hit-normal hit))))
          (setf (against-wall player) (if (plusp (vx (hit-normal hit)))
                                          :right
-                                         :left))))
+                                         :left)
+               (animation player) 2)))
   (vsetf (location player)
          (round (vx (hit-pos hit)))
          (round (vy (hit-pos hit)))
