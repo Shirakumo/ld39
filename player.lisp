@@ -177,14 +177,13 @@
           while nearest-hit
           do (hit (hit-a nearest-hit) (hit-b nearest-hit) nearest-hit)))
 
-  (for:for ((entity over *loop*))
+  (for:for ((timer = (unit :light-timer *loop*))
+            (entity over *loop*))
+    (while timer)
     (when (and (typep entity 'light-switch)
-               (not (switchedp entity))
                (test-collision player entity))
-      (let ((timer (unit :light-timer *loop*)))
-        (when timer
-          (setf (duration timer) (max-duration timer)
-                (switchedp entity) t)))))
+      (setf (duration timer) (max-duration timer))
+      (leave entity *loop*)))
 
   (nvclamp (v- (vlim player)) (vel player) (vlim player))
   (when (plusp (vy (vel player)))

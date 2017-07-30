@@ -20,7 +20,7 @@
     (#p"battery.png"))
 
 (define-shader-subject light-switch (base-entity)
-  ((switchedp :initform nil :accessor switchedp))
+  ()
   (:default-initargs
    :texture (asset 'ld39 'battery)
    :size (vec 128 128)
