@@ -86,3 +86,15 @@
    :size (vec 64 64)
    :vertex-array (asset 'ld39 '64x)
    :layer 2))
+
+(define-shader-subject camera-target (sized-entity colored-subject)
+  ()
+  (:default-initargs
+   :color (vec 1 0 0 0.1)
+   :size (vec 1 1)))
+
+(define-shader-subject exit (resizable-subject colored-subject)
+  ((camera-target :initform nil :accessor camera-target))
+  (:default-initargs
+   :color (vec 0 0 1 1)
+   :layer 2))
