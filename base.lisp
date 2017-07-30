@@ -98,3 +98,12 @@
   (:default-initargs
    :color (vec 0 0 1 1)
    :layer 2))
+
+(defclass game-over (event)
+  ())
+
+(defclass level-complete (event)
+  ())
+
+(defclass level-begin (event)
+  ())
