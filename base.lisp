@@ -23,6 +23,9 @@
 (define-asset (ld39 512x) mesh
     ((make-rectangle 512 512)))
 
+(define-asset (ld39 1024x) mesh
+    ((make-rectangle 1024 1024)))
+
 (defgeneric solidp (entity)
   (:method (entity) nil))
 

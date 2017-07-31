@@ -16,6 +16,7 @@
              :texture (asset 'ld39 ',name)
              :size (vec ,size ,size)
              :vertex-array (asset 'ld39 ',(ecase size
+                                            (1024 '1024x)
                                             (512 '512x)
                                             (256 '256x)
                                             (128 '128x)
@@ -65,7 +66,7 @@
 (define-object decal-2 :size 256 :background T :layer 3)
 (define-object decal-l :size 256 :background T :layer 3)
 (define-object decal-r :size 256 :background T :layer 3)
-
+(define-object howtoplay :size 1024 :background T :layer 3)
 
 (define-asset (ld39 game-over-screen) texture
     (#p"gameover.png"))
