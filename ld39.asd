@@ -15,7 +15,8 @@
                (:file "editor")
                (:file "main"))
   :depends-on (:trial
-               :array-utils)
+               :array-utils
+               :harmony-simple)
   :defsystem-depends-on (:deploy)
   :build-operation "deploy-op"
   :build-pathname "ld39"

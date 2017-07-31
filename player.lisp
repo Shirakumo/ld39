@@ -151,8 +151,7 @@
                        0.48)
                    (/ (vx (vlim player)) (abs (vx vel))))
                 1000.0)))
-
-    #+harmony-is-actually-working-now
+    
     (when (and (= (animation player) 0)
                (= 0 (vy (vel player)))
                (/= (vx (tile player)) (anim-tile player)))
