@@ -93,7 +93,7 @@
     (setf (uniforms light-scatter-pass*) `(("light" ,intensity)))))
 
 (define-shader-pass fader (simple-post-effect-pass)
-  ((fade :initform 0.0 :accessor fade)
+  ((fade :initarg :fade :initform 0.0 :accessor fade)
    (action :initform :level-begin :accessor action)))
 
 (define-class-shader (fader :fragment-shader)
@@ -155,6 +155,7 @@ void main(){
           (pass4 (make-instance 'fader)))
       (register pass1 pipeline)
       (cond ((active (unit :editor (scene main)))
+             (setf (fade pass4) 1.0)
              (connect (port pass1 'color) (port pass4 'previous-pass) pipeline))
             (T
              (connect (port pass1 'color) (port pass3 'previous-pass) pipeline)
