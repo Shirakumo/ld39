@@ -163,9 +163,11 @@ void main(){
   (maybe-reload-scene))
 
 (defun launch ()
+  #+harmony
   (unless (harmony-simple:started-p)
     (harmony-simple:start))
   (trial:launch 'main))
 
+#+harmony
 (deploy:define-hook (:quit harmony) ()
   (harmony-simple:stop))

@@ -16,7 +16,7 @@
                (:file "main"))
   :depends-on (:trial-glfw
                :array-utils
-               :harmony-simple)
+               #+harmony :harmony-simple)
   :defsystem-depends-on (:deploy)
   :build-operation "deploy-op"
   :build-pathname "ld39"
