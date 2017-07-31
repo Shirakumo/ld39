@@ -15,6 +15,10 @@
 (define-action load-map ()
   (key-press (one-of key :f11 :l1)))
 
+(define-action toggle-editor (system-action)
+  (key-press (one-of key :section :grave))
+  (gamepad-press (one-of button :home)))
+
 (define-subject editor (located-entity)
   ((active :initarg :active :accessor active)
    (layer :initform NIL :accessor layer)
@@ -45,7 +49,7 @@
   (setf (map-file (window :main)) (pathname (read-line *standard-input*)))
   (maybe-reload-scene))
 
-(define-handler (editor toggle-overlay) (ev)
+(define-handler (editor toggle-editor) (ev)
   (setf (active editor) (not (active editor)))
   (setup-pipeline (window :main))
   (cond ((active editor)
