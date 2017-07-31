@@ -166,3 +166,6 @@ void main(){
   (unless (harmony-simple:started-p)
     (harmony-simple:start))
   (trial:launch 'main))
+
+(deploy:define-hook (:quit harmony) ()
+  (harmony-simple:stop))
