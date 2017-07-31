@@ -105,7 +105,7 @@ out vec4 color;
 
 void main(){
   color = texture(previous_pass, tex_coord);
-  color.rgb *= opacity;
+  color.rgb = mix(vec3(0.1, 0.1, 0.1), color.rgb, opacity);
   color.a = 1;
 }")
 
@@ -170,7 +170,7 @@ void main(){
     (harmony-simple:start))
   (if map
       (trial:launch 'main :map-file map)
-      (trial:launch 'main :width 1280 :height 720)))
+      (trial:launch 'main :width 1280 :height 720 :title "Rush - LD39")))
 
 #+harmony
 (deploy:define-hook (:quit harmony) ()
