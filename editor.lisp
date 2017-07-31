@@ -238,7 +238,7 @@
                                       (name unit)
                                       (max-duration unit)
                                       (duration unit))))))
-        (map-path (pool-path 'ld39 map)))
+        (map-path (pool-path 'ld39 (format NIL "~a.lisp" map))))
     (when (or unit-data timer-data)
       (with-open-file (stream map-path :direction :output
                                        :if-exists :supersede
@@ -249,7 +249,7 @@
 
 (defun load-map (map &optional (scene *loop*))
   (let (units timer)
-    (with-open-file (stream (pool-path 'ld39 map))
+    (with-open-file (stream (pool-path 'ld39 (format NIL "~a.lisp" map)))
       (let ((data (make-string (file-length stream)))
             (pos 0))
         (read-sequence data stream)

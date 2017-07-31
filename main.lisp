@@ -162,7 +162,9 @@ void main(){
              (connect (port pass3 'color) (port pass4 'previous-pass) pipeline)))))
   (maybe-reload-scene))
 
-(defun launch ()
+(defun launch (&optional map)
   (unless (harmony::thread harmony-simple:*server*)
     (harmony-simple:start))
-  (trial:launch 'main))
+  (if map
+      (trial:launch 'main :map-file map)
+      (trial:launch 'main)))
