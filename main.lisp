@@ -105,7 +105,7 @@ out vec4 color;
 
 void main(){
   color = texture(previous_pass, tex_coord);
-  color.rgb *= opacity;
+  color.rgb = mix(vec3(0.1, 0.1, 0.1), color.rgb, opacity);
   color.a = 1;
 }")
 
