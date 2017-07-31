@@ -21,7 +21,8 @@
 
 (defmethod paint ((scene scene) target)
   (for:for ((unit across (draw-order scene)))
-    (paint unit target)))
+    (paint unit target))
+  (paint (unit :controller scene) target))
 
 (defclass main (trial:main)
   ((scene :initform (make-instance 'scene*) :accessor scene)
