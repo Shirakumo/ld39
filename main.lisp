@@ -38,7 +38,7 @@
   (:default-initargs :name :camera))
 
 (defmethod setup-perspective :after ((camera sidescroll-camera*) ev)
-  (setf (view-scale camera) (/ (width ev) 2048))
+  (setf (view-scale camera) (/ (width ev) 3000))
   (vsetf (location camera)
          (/ (width ev) (view-scale camera) 2)
          (/ (height ev) (view-scale camera) 3/2)))
