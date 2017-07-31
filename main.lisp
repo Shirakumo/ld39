@@ -169,7 +169,7 @@ void main(){
     (harmony-simple:start))
   (if map
       (trial:launch 'main :map-file map)
-      (trial:launch 'main)))
+      (trial:launch 'main :width 1280 :height 720)))
 
 #+harmony
 (deploy:define-hook (:quit harmony) ()
