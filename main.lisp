@@ -30,7 +30,7 @@
    (map-file :initarg :map-file :initform NIL :accessor map-file))
   (:default-initargs
    :clear-color (vec 0.1 0.1 0.1 0)
-   :map-files '("startmap" "map0" "map1" "map2" "map3" "map4" "map5")
+   :map-files '("startmap" "map0" "map1" "map2" "map3" "map4" "map5" "endmap")
    :map-file "startmap"))
 
 (define-subject sidescroll-camera* (sidescroll-camera)
