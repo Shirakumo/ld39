@@ -151,16 +151,16 @@
                        0.48)
                    (/ (vx (vlim player)) (abs (vx vel))))
                 1000.0)))
-    
+    #+harmony
     (when (and (= (animation player) 0)
                (= 0 (vy (vel player)))
                (/= (vx (tile player)) (anim-tile player)))
       (cond
-        ((= (vx (tile player)) 1)
+        ((= (vx (tile player)) 0)
          (harmony-simple:play (getf (sounds player) :footstep-right) :sfx
                               :type 'harmony-mp3:mp3-buffer-source
                               :loop NIL))
-        ((= (vx (tile player)) 7)
+        ((= (vx (tile player)) 6)
          (harmony-simple:play (getf (sounds player) :footstep-left) :sfx
                               :type 'harmony-mp3:mp3-buffer-source
                               :loop NIL)))

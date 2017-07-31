@@ -163,8 +163,13 @@ void main(){
   (maybe-reload-scene))
 
 (defun launch (&optional map)
-  (unless (harmony::thread harmony-simple:*server*)
+  #+harmony
+  (unless (harmony-simple:started-p)
     (harmony-simple:start))
   (if map
       (trial:launch 'main :map-file map)
       (trial:launch 'main)))
+
+#+harmony
+(deploy:define-hook (:quit harmony) ()
+  (harmony-simple:stop))
