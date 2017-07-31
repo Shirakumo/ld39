@@ -86,10 +86,14 @@
                  :footstep-right (pool-path 'ld39 #P"footstep-right.mp3"))))
 
 (define-handler (player jump) (ev key)
+  (when (and (against-wall player)
+             (not (zerop (vx (vel player)))))
+    (setf (against-wall player) NIL
+          (animation player) 0
+          (wall-jumping-p player) NIL))
   (cond
     ((and (against-wall player)
-          (not (zerop (vy (vel player))))
-          (= 2 (animation player)))
+          (not (zerop (vy (vel player)))))
      (setf (vy (vel player)) (vy (vacc player))
            (vx (vel player)) (case (against-wall player)
                                (:left  (- (vx (vlim player))))
