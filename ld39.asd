@@ -14,7 +14,7 @@
                (:file "player")
                (:file "editor")
                (:file "main"))
-  :depends-on (:trial
+  :depends-on (:trial-glfw
                :array-utils
                :harmony-simple)
   :defsystem-depends-on (:deploy)
