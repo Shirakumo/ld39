@@ -163,6 +163,6 @@ void main(){
   (maybe-reload-scene))
 
 (defun launch ()
-  (unless (harmony::thread harmony-simple:*server*)
+  (unless (harmony-simple:started-p)
     (harmony-simple:start))
   (trial:launch 'main))
