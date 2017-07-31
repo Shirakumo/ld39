@@ -67,6 +67,7 @@
 (define-object decal-l :size 256 :background T :layer 3)
 (define-object decal-r :size 256 :background T :layer 3)
 (define-object howtoplay :size 1024 :background T :layer 3)
+(define-object thanksforplaying :size 1024 :background T :layer 3)
 
 (define-asset (ld39 game-over-screen) texture
     (#p"gameover.png"))
