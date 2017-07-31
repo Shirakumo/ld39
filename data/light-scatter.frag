@@ -33,7 +33,7 @@ void main(){
   color = previous;
   color.rgb *= 1-shadow_intensity;
   color.rgb += 0.2*(1-dist)*light;
-  color.rgb *= min(1.0, light+0.5);
+  color.rgb *= min(1.0, light+0.2);
   if(0.3 < previous.r) color.r = mix(color.r, previous.r, 0.5);
   if(0.3 < previous.g) color.g = mix(color.g, previous.g, 0.5);
   if(0.3 < previous.b) color.b = mix(color.b, previous.b, 0.5);
