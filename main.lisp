@@ -170,7 +170,7 @@ void main(){
     (harmony-simple:start))
   (if map
       (trial:launch 'main :map-file map)
-      (trial:launch 'main :width 1280 :height 720)))
+      (trial:launch 'main :width 1280 :height 720 :title "Rush - LD39")))
 
 #+harmony
 (deploy:define-hook (:quit harmony) ()
