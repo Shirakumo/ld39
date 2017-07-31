@@ -10,7 +10,7 @@
 
 (define-action jump (movement)
   (key-press (one-of key :space))
-  (gamepad-press (one-of button :x)))
+  (gamepad-press (one-of button :x :a)))
 
 (define-action start-left (movement)
   (key-press (one-of key :a :left))
