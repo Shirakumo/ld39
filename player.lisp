@@ -88,7 +88,8 @@
 (define-handler (player jump) (ev key)
   (cond
     ((and (against-wall player)
-          (not (zerop (vy (vel player)))))
+          (not (zerop (vy (vel player))))
+          (= 2 (animation player)))
      (setf (vy (vel player)) (vy (vacc player))
            (vx (vel player)) (case (against-wall player)
                                (:left  (- (vx (vlim player))))
@@ -135,10 +136,13 @@
           (T
            (incf (vx vel) (vx vdcc))))
 
+    ;; Double jump
     (cond ((and (v= 0 vel) (= 0 (jump-count player)))
            (setf (animation player) 1))
           ((= 0 (vy vel))
            (setf (animation player) 0)))
+
+    ;; Animation check
     (when (= (animation player) 0)
       (setf (second (first (animations player)))
             (if (/= 0 (vx vel))
@@ -163,10 +167,12 @@
                               :loop NIL)))
       (setf (anim-tile player) (vx (tile player)))))
 
+  ;; Gravity
   (incf (vy (vel player)) (if (against-wall player)
                               (vy (vdcc-ground player))
                               (vy (vdcc-air player))))
 
+  ;; Collision stuff
   (let ((nearest-hit NIL))
     (loop repeat 2
           do (setf nearest-hit NIL)
@@ -231,10 +237,13 @@
                                  (v/ (size entity) 2))
          (issue *loop* 'level-complete)
          (deregister player *loop*)))))
+
+  ;; Stop animation
   (when (or (= 0 (vx (vel player)))
             (/= 0 (vy (vel player))))
     (setf (anim-tile player) -1))
 
+  ;; Final tweaks
   (nvclamp (v- (vlim player)) (vel player) (vlim player))
   (when (plusp (vy (vel player)))
     (setf (jump-count player) (max 1 (jump-count player)))
