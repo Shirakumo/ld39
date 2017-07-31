@@ -93,7 +93,7 @@
     (setf (uniforms light-scatter-pass*) `(("light" ,intensity)))))
 
 (define-shader-pass fader (simple-post-effect-pass)
-  ((fade :initform 1.0 :accessor fade)
+  ((fade :initform 0.0 :accessor fade)
    (action :initform :level-begin :accessor action)))
 
 (define-class-shader (fader :fragment-shader)
