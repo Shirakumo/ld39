@@ -1,9 +1,3 @@
-#|
- This file is a part of ld39
- (c) 2017 Shirakumo http://tymoon.eu (shinmera@tymoon.eu)
- Author: Joram Schrijver <i@joram.io>
-|#
-
 (in-package #:org.shirakumo.fraf.ld39)
 
 (define-pool ld39 :base :ld39)
